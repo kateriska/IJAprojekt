@@ -13,7 +13,7 @@ public class Street {
     private Coordinate coordinate2;
     private Coordinate coordinate_end;
     private List<Coordinate> all_coordinates_list = new ArrayList<Coordinate>();
-    //private List<Stop> all_stops_list = new ArrayList<Stop>();
+    private List<Stop> all_stops_list = new ArrayList<Stop>();
 
     public Street(String street_id, Coordinate coordinate1, Coordinate coordinate2, Coordinate coordinate_end)
     {
@@ -96,10 +96,10 @@ public class Street {
 
         //System.out.println(this_street_coordinates);
         //System.out.println(s_street_coordinates);
-        Coordinate this_last_point = this_street_coordinates.get(this_street_coordinates.size() - 1);
+        Coordinate this_last_point = this_street_coordinates.get(2);
         Coordinate this_first_point = this_street_coordinates.get(0);
         Coordinate s_first_point = s_street_coordinates.get(0);
-        Coordinate s_last_point = s_street_coordinates.get(this_street_coordinates.size()-1);
+        Coordinate s_last_point = s_street_coordinates.get(2);
 
         //System.out.println(this_last_point.getX());
         //System.out.println(s_first_point.getX());
@@ -133,35 +133,42 @@ public class Street {
 
 
     }
-/*
-    public boolean addStop(Stop stop) {
+
+
+    public boolean addStop(Stop stop, boolean right_angle_street) {
         java.util.List<Coordinate> this_street_coordinates = this.getCoordinates();
         Coordinate stop_coordinates = stop.getCoordinate();
-        int diff_end_points = Math.abs(this_street_coordinates.get(0).getX() - this_street_coordinates.get(this_street_coordinates.size()-1).getX());
 
-        //System.out.println(this_street_coordinates.get(1).getX());
-        //System.out.println(stop_coordinates.getX());
-
-
-        if (this_street_coordinates.get(0).getY() == this_street_coordinates.get(this_street_coordinates.size()-1).getY() && stop_coordinates.getX() < diff_end_points)
+        if (right_angle_street == false)
         {
-            stop.setStreet(this);
+            double distance1 = Math.sqrt(Math.pow((this_street_coordinates.get(0).getX() - stop_coordinates.getX()), 2) + Math.pow((this_street_coordinates.get(0).getY() - stop_coordinates.getY()), 2));
+            double distance2 = Math.sqrt(Math.pow((stop_coordinates.getX() - this_street_coordinates.get(2).getX()), 2) + Math.pow((stop_coordinates.getY() - this_street_coordinates.get(2).getY()), 2));
+            double distance3 = Math.sqrt(Math.pow((this_street_coordinates.get(0).getX() - this_street_coordinates.get(2).getX()), 2) + Math.pow((this_street_coordinates.get(0).getY() - this_street_coordinates.get(2).getY()), 2));
 
-            all_stops_list.add(stop);
+            System.out.println(distance1);
+            System.out.println(distance2);
+            System.out.println(distance3);
+            System.out.println(distance1+distance2);
 
-            return true;
+            long result1 = Math.round(distance1 + distance2);
+            long result2 = Math.round(distance3);
+            if (result1 == result2)
+            {
+                stop.setStreet(this);
+                all_stops_list.add(stop);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
-        else if (stop_coordinates.getX() > this_street_coordinates.get(this_street_coordinates.size()-1).getX())
-        {
-            return false;
-        }
 
-        stop.setStreet(this);
 
-        all_stops_list.add(stop);
 
         return true;
     }
 
-*/
+
 }
