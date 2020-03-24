@@ -1,0 +1,7 @@
+Stop1 - [400,538]; Street17
+Stop2 - [400,700]; Street20
+Stop3 - [540,100]; Street9
+Stop4 - [60,459]; Street8
+Stop5 - [60,330]; Street6
+Stop6 - [294,531]; Street18
+Stop7 - [118,520]; Street7
