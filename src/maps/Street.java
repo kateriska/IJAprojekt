@@ -82,14 +82,14 @@ public class Street {
     {
         return street_id;
     }
-/*
+
     public java.util.List<Stop> getStops()
     {
         return this.all_stops_list;
     }
 
 
- */
+
     public boolean follows(Street s) {
         java.util.List<Coordinate> this_street_coordinates = this.getCoordinates();
         java.util.List<Coordinate> s_street_coordinates = s.getCoordinates();
@@ -164,10 +164,34 @@ public class Street {
             }
 
         }
+        else
+        {
+            double distance1 = Math.sqrt(Math.pow((this_street_coordinates.get(0).getX() - stop_coordinates.getX()), 2) + Math.pow((this_street_coordinates.get(0).getY() - stop_coordinates.getY()), 2));
+            double distance2 = Math.sqrt(Math.pow((stop_coordinates.getX() - this_street_coordinates.get(1).getX()), 2) + Math.pow((stop_coordinates.getY() - this_street_coordinates.get(1).getY()), 2));
+            double distance3 = Math.sqrt(Math.pow((this_street_coordinates.get(0).getX() - this_street_coordinates.get(1).getX()), 2) + Math.pow((this_street_coordinates.get(0).getY() - this_street_coordinates.get(1).getY()), 2));
 
+            double distance4 = Math.sqrt(Math.pow((this_street_coordinates.get(1).getX() - stop_coordinates.getX()), 2) + Math.pow((this_street_coordinates.get(2).getY() - stop_coordinates.getY()), 2));
+            double distance5 = Math.sqrt(Math.pow((stop_coordinates.getX() - this_street_coordinates.get(2).getX()), 2) + Math.pow((stop_coordinates.getY() - this_street_coordinates.get(2).getY()), 2));
+            double distance6 = Math.sqrt(Math.pow((this_street_coordinates.get(1).getX() - this_street_coordinates.get(2).getX()), 2) + Math.pow((this_street_coordinates.get(1).getY() - this_street_coordinates.get(2).getY()), 2));
 
+            long result1 = Math.round(distance1 + distance2);
+            long result2 = Math.round(distance3);
+            long result3 = Math.round(distance4 + distance5);
+            long result4 = Math.round(distance6);
 
-        return true;
+            if (result1 == result2 || result3 == result4)
+            {
+                stop.setStreet(this);
+                all_stops_list.add(stop);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
     }
 
 
