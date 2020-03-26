@@ -1,4 +1,8 @@
 // Import classes
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 import maps.Coordinate;
 import maps.Street;
 import maps.Stop;
@@ -191,6 +195,34 @@ public class MainWindow extends Application {
                 }
             }
         }
+
+        Circle vehicle = new Circle(transportLine.getStopsMap().get(0).getCoordinate().getX(), transportLine.getStopsMap().get(0).getCoordinate().getY(), 5);
+        vehicle.setStroke(Color.AZURE);
+        vehicle.setStrokeWidth(5);
+        Duration SEC_5 = Duration.millis(5000);
+        Duration SEC_10 = Duration.millis(10000);
+        System.out.println("Location before relocation = " + vehicle.centerXProperty() + ","
+                + vehicle.centerYProperty() + ")");
+        Timeline timeline = new Timeline();
+
+        KeyFrame end = new KeyFrame(SEC_5,
+                new KeyValue(vehicle.centerXProperty(), 189),
+                new KeyValue(vehicle.centerYProperty(), 189));
+        KeyFrame end2 = new KeyFrame(SEC_10,
+                new KeyValue(vehicle.centerXProperty(), 60),
+                new KeyValue(vehicle.centerYProperty(), 289));
+
+        timeline.getKeyFrames().addAll(end, end2);
+        timeline.setOnFinished(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Location after relocation = " + vehicle.centerXProperty()
+                        + "," + vehicle.centerYProperty() + ")");
+            }
+        });
+        timeline.play();
+
+        root.getChildren().add(vehicle);
 
         stage.setScene(scene);
         stage.show();
