@@ -1,7 +1,4 @@
 package maps;
-//import maps.Line;
-//import maps.Stop;
-//import maps.Street;
 
 public class Coordinate {
 

@@ -1,17 +1,9 @@
 package maps;
 
-//import maps.Line;
-import maps.Street;
-import maps.Coordinate;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class Stop {
     private String id;
     private Coordinate street_coordinates;
     private Street street_name;
-    private List<Street> streets_map = new ArrayList<Street>();
 
     public Stop(String id, Coordinate street_coordinates)
     {
@@ -46,7 +38,7 @@ public class Stop {
 
     @Override
     public String toString() {
-        String stop_converstion = "stop(" + this.getId() + ")";
-        return stop_converstion;
+        String stop_conversion = "stop(" + this.getId() + ")";
+        return stop_conversion;
     }
 }
