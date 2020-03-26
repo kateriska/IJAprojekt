@@ -1,10 +1,9 @@
-
+// Import classes
 import maps.Coordinate;
 import maps.Street;
 import maps.Stop;
 import maps.TransportLine;
-
-
+// Import java classes
 import javafx.scene.image.Image;
 import java.awt.geom.Point2D;
 import java.io.*;
@@ -19,15 +18,12 @@ import java.awt.MouseInfo;
 import javafx.event.*;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import javafx.scene.shape.Circle;
-
-
 
 public class MainWindow extends Application {
 
     public static void main(String[] args) {
-        launch(args);
+        launch(args); // launch app
     }
 
     @Override
@@ -35,9 +31,9 @@ public class MainWindow extends Application {
         ArrayList<Street> streets_list = new ArrayList<Street>();
         ArrayList<Stop> stops_list = new ArrayList<Stop>();
 
-        Pane root = new Pane();
+        Pane root = new Pane(); // create new pane for GUI
 
-        Scene scene = new Scene(root, 1000, 771);
+        Scene scene = new Scene(root, 1000, 771); // set width and height of window
 
         Line line1 = null;
         Line line2 = null;
@@ -45,14 +41,15 @@ public class MainWindow extends Application {
         File file = new File("C:/Users/forto/IdeaProjects/proj/lib/map.png");
         BackgroundImage myBI= new BackgroundImage(new Image(file.toURI().toString()),
                 BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
-        root.setBackground(new Background(myBI));
-
+        root.setBackground(new Background(myBI)); // set map as background, with no repeat and also some free space for TO DO GUI components
+        // beginning of coordinates [0,0] is in left upon corner of whole window and also it is beginning for image
 
         Point2D p = MouseInfo.getPointerInfo().getLocation();
 
         root.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                // show specific coordinates after mouse clicking in console - useful for positioning of streets and stops
                 System.out.println(event.getSceneX());
                 System.out.println(event.getSceneY());
             }
@@ -60,11 +57,15 @@ public class MainWindow extends Application {
 
         streets_list = setMapStreets();
 
+        /*
+        highlight all street objects in map - streets with two coordinates with yellow and
+        streets with three coordinates (right angle streets) with red - need to create two lines instead one for this type of streets
+         */
+
         for (Street s : streets_list)
         {
             if (s.getCoordinates().get(1) != null)
             {
-
                 line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(),   s.getCoordinates().get(1).getX(),   s.getCoordinates().get(1).getY());
                 line2 = new Line(s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY(),   s.getCoordinates().get(2).getX(),   s.getCoordinates().get(2).getY());
                 line1.setStroke(Color.DARKRED);
@@ -80,30 +81,12 @@ public class MainWindow extends Application {
                 line1.setStroke(Color.YELLOW);
                 line1.setStrokeWidth(5);
                 root.getChildren().addAll(line1);
-
             }
-
-
         }
 
         stops_list = setMapStops(streets_list);
 
-        for (Street s : streets_list)
-        {
-            System.out.println(s.getId());
-            System.out.println("Follows/Not Followes");
-            for (Street o : streets_list)
-            {
-                if (o.equals(s))
-                {
-                    continue;
-                }
-
-                System.out.println(o.getId() + ": " + s.follows(o));
-            }
-        }
-
-        for (Stop stop : stops_list)
+        for (Stop stop : stops_list) //  highlight all stop objects in map
         {
             Circle circle = new Circle(stop.getCoordinate().getX(), stop.getCoordinate().getY(), 5);
             circle.setStroke(Color.YELLOWGREEN);
@@ -111,9 +94,8 @@ public class MainWindow extends Application {
             root.getChildren().addAll(circle);
         }
 
-
         TransportLine transportLine = setScheduleLines(streets_list, stops_list);
-        for (Stop stop : stops_list)
+        for (Stop stop : stops_list) // highlight stop object from transport line with pink color
         {
             if (transportLine.getStopsMap().contains(stop))
             {
@@ -122,16 +104,76 @@ public class MainWindow extends Application {
                 circle.setStrokeWidth(5);
                 root.getChildren().addAll(circle);
             }
-
         }
 
+        /*
+        highlight the journey of line with pink color -
+        it means highlight all street from beginning to end when the line is travel through all street
+        and highlight only part from stop to end coordinate of street for beginning and end street, because
+        the line is not travel through all street but only part of it
+         */
         for (Street s : streets_list)
         {
-            if (transportLine.getStreetsMap().contains(s))
+            if (transportLine.getStreetsMap().get(0).equals(s)) // first street of line
+            {
+                int begin_stop_x = transportLine.getStopsMap().get(0).getCoordinate().getX();
+                int begin_stop_y = transportLine.getStopsMap().get(0).getCoordinate().getY();
+
+                Coordinate begin_street_1 = s.getCoordinates().get(0);
+                Coordinate begin_street_2 = s.getCoordinates().get(2);
+
+                Coordinate second_street_1 = transportLine.getStreetsMap().get(1).getCoordinates().get(0);
+                Coordinate second_street_2 = transportLine.getStreetsMap().get(1).getCoordinates().get(2);
+
+                if (begin_street_1.equals(second_street_1) || begin_street_1.equals(second_street_2))
+                {
+                    System.out.println("Highlight part of first street from first stop");
+                    line1 = new Line(begin_stop_x, begin_stop_y, begin_street_1.getX(), begin_street_1.getY());
+                    line1.setStroke(Color.PINK);
+                    line1.setStrokeWidth(5);
+                    root.getChildren().addAll(line1);
+                }
+                else if (begin_street_2.equals(second_street_1) || begin_street_2.equals(second_street_2))
+                {
+                    System.out.println("Highlight part of end street from end stop");
+                    line1 = new Line(begin_stop_x, begin_stop_y, begin_street_2.getX(), begin_street_2.getY());
+                    line1.setStroke(Color.PINK);
+                    line1.setStrokeWidth(5);
+                    root.getChildren().addAll(line1);
+                }
+            }
+            else if (transportLine.getStreetsMap().get(transportLine.getStreetsMap().size()-1).equals(s)) // end street of line
+            {
+                int end_stop_x = transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate().getX();
+                int end_stop_y = transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate().getY();
+
+                Coordinate end_street_1 = s.getCoordinates().get(0);
+                Coordinate end_street_2 = s.getCoordinates().get(2);
+
+                Coordinate nexttolast_street_1 = transportLine.getStreetsMap().get(transportLine.getStreetsMap().size()-2).getCoordinates().get(0);
+                Coordinate nexttolast_street_2 = transportLine.getStreetsMap().get(transportLine.getStreetsMap().size()-2).getCoordinates().get(2);
+
+                if (end_street_1.equals(nexttolast_street_1) || end_street_1.equals(nexttolast_street_2))
+                {
+                    System.out.println("Highlight last street from stop1");
+                    line1 = new Line(end_stop_x, end_stop_y, end_street_1.getX(), end_street_1.getY());
+                    line1.setStroke(Color.PINK);
+                    line1.setStrokeWidth(5);
+                    root.getChildren().addAll(line1);
+                }
+                else if (end_street_2.equals(nexttolast_street_1) || end_street_2.equals(nexttolast_street_2))
+                {
+                    System.out.println("Highlight last street from stop1");
+                    line1 = new Line(end_stop_x, end_stop_y, end_street_2.getX(), end_street_2.getY());
+                    line1.setStroke(Color.PINK);
+                    line1.setStrokeWidth(5);
+                    root.getChildren().addAll(line1);
+                }
+            }
+            else if (transportLine.getStreetsMap().contains(s))
             {
                 if (s.getCoordinates().get(1) != null)
                 {
-
                     line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(),   s.getCoordinates().get(1).getX(),   s.getCoordinates().get(1).getY());
                     line2 = new Line(s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY(),   s.getCoordinates().get(2).getX(),   s.getCoordinates().get(2).getY());
                     line1.setStroke(Color.PINK);
@@ -139,7 +181,6 @@ public class MainWindow extends Application {
                     line2.setStroke(Color.PINK);
                     line2.setStrokeWidth(5);
                     root.getChildren().addAll(line1, line2);
-
                 }
                 else
                 {
@@ -147,13 +188,9 @@ public class MainWindow extends Application {
                     line1.setStroke(Color.PINK);
                     line1.setStrokeWidth(5);
                     root.getChildren().addAll(line1);
-
                 }
             }
-
         }
-
-
 
         stage.setScene(scene);
         stage.show();
@@ -184,8 +221,6 @@ public class MainWindow extends Application {
                 street_coordinates3 = (street_coordinates2.substring((street_coordinates2.indexOf(";") + 1)).trim());
                 street_coordinates2 = (street_coordinates2.substring(0,(street_coordinates2.indexOf(";"))).trim());
                 right_angle_street = true;
-
-
             }
 
 
@@ -223,8 +258,6 @@ public class MainWindow extends Application {
 
         }
 
-
-
         return streets_list;
     }
 
@@ -239,20 +272,13 @@ public class MainWindow extends Application {
 
         while ((line = br.readLine()) != null)
         {
-            System.out.println(line);
-
             String stop_id = line.substring(0,(line.indexOf("-"))).trim();
             String stop_coordinates = line.substring((line.indexOf("-") + 1),line.indexOf(";")).trim();
-            System.out.println(stop_id);
-            System.out.println(stop_coordinates);
 
             int stop_coordinates_x = Integer.parseInt(stop_coordinates.substring(1, (stop_coordinates.indexOf(","))));
-            System.out.println(stop_coordinates_x);
             int stop_coordinates_y = Integer.parseInt(stop_coordinates.substring(stop_coordinates.indexOf(",")+1,stop_coordinates.length()-1));
-            System.out.println(stop_coordinates_y);
 
             String street_of_stop_id = line.substring(line.indexOf(";") + 1).trim();
-            System.out.println(street_of_stop_id);
 
             Coordinate c1 = new Coordinate(stop_coordinates_x, stop_coordinates_y);
             Stop stop = Stop.defaultStop(stop_id, c1);
@@ -265,7 +291,6 @@ public class MainWindow extends Application {
                     {
                         System.out.println("Normal street");
                         s.addStop(stop, false);
-                        System.out.println(stop.getStreet().getId());
                         stops_list.add(stop);
 
                     }
@@ -273,7 +298,6 @@ public class MainWindow extends Application {
                     {
                         System.out.println("Right angle street");
                         s.addStop(stop, true);
-                        System.out.println(stop.getStreet().getId());
                         stops_list.add(stop);
                     }
 
