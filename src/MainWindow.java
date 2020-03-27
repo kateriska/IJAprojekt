@@ -196,9 +196,82 @@ public class MainWindow extends Application {
             }
         }
 
+        Coordinate next_street1 = null;
+        Coordinate next_street2 = null;
+        Street next_street = null;
+        ArrayList<Coordinate> line_coordinates = new ArrayList<Coordinate>();
+        for (int i = 0; i < transportLine.getStreetsMap().size(); i++)
+        {
+            Street s = transportLine.getStreetsMap().get(i);
+            Coordinate this_street1 = s.getCoordinates().get(0);
+            Coordinate this_street2 = s.getCoordinates().get(2);
+
+            if (i + 1 < transportLine.getStreetsMap().size())
+            {
+                next_street = transportLine.getStreetsMap().get(i+1);
+                next_street1 = next_street.getCoordinates().get(0);
+                next_street2 = next_street.getCoordinates().get(2);
+            }
+            else
+            {
+                break;
+            }
+
+            for (Stop stop : transportLine.getStopsMap())
+            {
+                if (stop.getStreet().equals(s))
+                {
+                    line_coordinates.add(stop.getCoordinate());
+                }
+            }
+
+            //11
+            if (this_street1.getX() == next_street1.getX() && this_street1.getY() == next_street1.getY())
+            {
+                line_coordinates.add(this_street1);
+            }
+            //12
+            else if (this_street1.getX() == next_street2.getX() && this_street1.getY() == next_street2.getY())
+            {
+                line_coordinates.add(this_street1);
+            }
+            // 21
+            else if (this_street2.getX() == next_street1.getX() && this_street2.getY() == next_street1.getY())
+            {
+                line_coordinates.add(this_street2);
+            }
+            //22
+            else if (this_street2.getX() == next_street2.getX() && this_street2.getY() == next_street2.getY())
+            {
+                line_coordinates.add(this_street2);
+            }
+
+
+        }
+
+        line_coordinates.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate());
+
+        for (Coordinate c : line_coordinates)
+        {
+            System.out.println(c.getX() + ", " + c.getY());
+        }
+
         Circle vehicle = new Circle(transportLine.getStopsMap().get(0).getCoordinate().getX(), transportLine.getStopsMap().get(0).getCoordinate().getY(), 5);
         vehicle.setStroke(Color.AZURE);
         vehicle.setStrokeWidth(5);
+
+        Timeline timeline = new Timeline();
+
+        for (int i = 0; i < line_coordinates.size()-1; i++)
+        {
+            KeyFrame end = new KeyFrame(Duration.seconds(i+1),
+                    new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i+1).getX()),
+                    new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i+1).getY()));
+            timeline.getKeyFrames().addAll(end);
+        }
+
+
+        /*
         Duration SEC_5 = Duration.millis(5000);
         Duration SEC_10 = Duration.millis(10000);
         System.out.println("Location before relocation = " + vehicle.centerXProperty() + ","
@@ -213,6 +286,8 @@ public class MainWindow extends Application {
                 new KeyValue(vehicle.centerYProperty(), 289));
 
         timeline.getKeyFrames().addAll(end, end2);
+
+         */
         timeline.setOnFinished(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
