@@ -59,6 +59,9 @@ public class Street {
     }
 
 
+    /* friendly reminder - for classic Streets with two coordinates this list looks like coordinate1, null, coordinate2
+       for right angle streets with 3 coordinates this list looks like coordinate1, coordinate2, coordinate3
+     */
     public java.util.List<Coordinate> getCoordinates()
     {
         all_coordinates_list.add(coordinate1);
@@ -116,6 +119,10 @@ public class Street {
 
     }
 
+    /*
+    this method checks whether stop is on street or not
+    I just needed to round the distances to int from float with many numbers, because sometimes it was too strict
+     */
 
     public boolean addStop(Stop stop, boolean right_angle_street) {
         java.util.List<Coordinate> this_street_coordinates = this.getCoordinates();
