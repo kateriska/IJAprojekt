@@ -200,6 +200,10 @@ public class MainWindow extends Application {
         Coordinate next_street2 = null;
         Street next_street = null;
         ArrayList<Coordinate> line_coordinates = new ArrayList<Coordinate>();
+        /*
+        this is loop for adding all points which vehicle needs to go through in line
+        it means - all stops, end coordinates of street or three coordinates in case of right angle streets
+         */
         for (int i = 0; i < transportLine.getStreetsMap().size(); i++)
         {
             Street s = transportLine.getStreetsMap().get(i);
@@ -251,23 +255,28 @@ public class MainWindow extends Application {
 
         line_coordinates.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate());
 
+        // print the final path of transportline
         for (Coordinate c : line_coordinates)
         {
             System.out.println(c.getX() + ", " + c.getY());
         }
 
+        // this is vehicle of line, marked as circle on map
         Circle vehicle = new Circle(transportLine.getStopsMap().get(0).getCoordinate().getX(), transportLine.getStopsMap().get(0).getCoordinate().getY(), 5);
         vehicle.setStroke(Color.AZURE);
         vehicle.setStrokeWidth(5);
 
         Timeline timeline = new Timeline();
 
+        // add all keyframes to timeline - one keyframe means path from one coordinate to another coordinate
+        int delta_time = 0;
         for (int i = 0; i < line_coordinates.size()-1; i++)
         {
-            KeyFrame end = new KeyFrame(Duration.seconds(i+1),
+            KeyFrame end = new KeyFrame(Duration.seconds(delta_time+2), // this means that the path from one coordinate to another lasts 2 seconds
                     new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i+1).getX()),
                     new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i+1).getY()));
             timeline.getKeyFrames().addAll(end);
+            delta_time = delta_time + 2;
         }
 
 
@@ -295,14 +304,18 @@ public class MainWindow extends Application {
                         + "," + vehicle.centerYProperty() + ")");
             }
         });
-        timeline.play();
+        timeline.play(); // play final animation
 
         root.getChildren().add(vehicle);
 
         stage.setScene(scene);
-        stage.show();
+        stage.show(); // show GUI scene
     }
 
+    /*
+    method for loading streets IDs and their coordinates from file, and create objects of all Streets in map
+    @return list of all Street objects
+     */
     public ArrayList<Street> setMapStreets() throws Exception
     {
         BufferedReader br = new BufferedReader(new FileReader("C:/Users/forto/IdeaProjects/proj/lib/streetsCoordinates.txt"));
@@ -369,6 +382,11 @@ public class MainWindow extends Application {
     }
 
 
+    /*
+    method for loading stops IDs and their coordinates from file, and create objects of all Stops in map
+    @arguments list of all streets in map
+    @return list of all Stop objects
+     */
     public ArrayList<Stop> setMapStops(ArrayList<Street> streetArrayList) throws Exception
     {
         BufferedReader br = new BufferedReader(new FileReader("C:/Users/forto/IdeaProjects/proj/lib/stopsCoordinates.txt"));
@@ -415,6 +433,12 @@ public class MainWindow extends Application {
         return stops_list;
     }
 
+    /*
+    method for loading line ID and their stops and streets without stops from file, and create objects TransportLine (aka Line in hw2)
+    @arguments list of all stops in map
+    @arguments list of all Street objects
+    @return TransportLine object
+     */
     public TransportLine setScheduleLines(ArrayList<Street> streetArrayList, ArrayList<Stop> stopArrayList) throws Exception
     {
         BufferedReader br = new BufferedReader(new FileReader("C:/Users/forto/IdeaProjects/proj/lib/transportSchedule.txt"));
