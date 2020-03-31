@@ -23,6 +23,8 @@ import javafx.event.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import javafx.scene.shape.Circle;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.text.Text;
 
 public class MainWindow extends Application {
 
@@ -35,7 +37,7 @@ public class MainWindow extends Application {
         ArrayList<Street> streets_list = new ArrayList<Street>();
         ArrayList<Stop> stops_list = new ArrayList<Stop>();
 
-        Pane root = new Pane(); // create new pane for GUI
+        BorderPane root = new BorderPane(); // create new pane for GUI
 
         Scene scene = new Scene(root, 1000, 771); // set width and height of window
 
@@ -95,7 +97,9 @@ public class MainWindow extends Application {
             Circle circle = new Circle(stop.getCoordinate().getX(), stop.getCoordinate().getY(), 5);
             circle.setStroke(Color.YELLOWGREEN);
             circle.setStrokeWidth(5);
-            root.getChildren().addAll(circle);
+            Text text = new Text(stop.getCoordinate().getX() + 10, stop.getCoordinate().getY() - 7, stop.getId());
+            text.setStroke(Color.YELLOWGREEN);
+            root.getChildren().addAll(circle, text);
         }
 
         TransportLine transportLine = setScheduleLines(streets_list, stops_list);
@@ -200,6 +204,7 @@ public class MainWindow extends Application {
         Coordinate next_street2 = null;
         Street next_street = null;
         ArrayList<Coordinate> line_coordinates = new ArrayList<Coordinate>();
+        ArrayList<String> line_coordinates_ids = new ArrayList<String>();
         /*
         this is loop for adding all points which vehicle needs to go through in line
         it means - all stops, end coordinates of street or three coordinates in case of right angle streets
@@ -226,6 +231,7 @@ public class MainWindow extends Application {
                 if (stop.getStreet().equals(s))
                 {
                     line_coordinates.add(stop.getCoordinate());
+                    line_coordinates_ids.add(stop.getId());
                 }
             }
 
@@ -233,49 +239,95 @@ public class MainWindow extends Application {
             if (this_street1.getX() == next_street1.getX() && this_street1.getY() == next_street1.getY())
             {
                 line_coordinates.add(this_street1);
+                line_coordinates_ids.add(s.getId());
             }
             //12
             else if (this_street1.getX() == next_street2.getX() && this_street1.getY() == next_street2.getY())
             {
                 line_coordinates.add(this_street1);
+                line_coordinates_ids.add(s.getId());
             }
             // 21
             else if (this_street2.getX() == next_street1.getX() && this_street2.getY() == next_street1.getY())
             {
                 line_coordinates.add(this_street2);
+                line_coordinates_ids.add(s.getId());
             }
             //22
             else if (this_street2.getX() == next_street2.getX() && this_street2.getY() == next_street2.getY())
             {
                 line_coordinates.add(this_street2);
+                line_coordinates_ids.add(s.getId());
             }
 
 
         }
 
         line_coordinates.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate());
-
+        ArrayList<Stop> line_stops = new ArrayList<Stop>();
         // print the final path of transportline
         for (Coordinate c : line_coordinates)
         {
-            System.out.println(c.getX() + ", " + c.getY());
+            //System.out.println(c.getX() + ", " + c.getY());
+            for (Stop s : stops_list)
+            {
+                if (s.getCoordinate().getX() == c.getX() && s.getCoordinate().getY() == c.getY())
+                {
+                    System.out.println(s.getId());
+                    line_stops.add(s);
+
+                }
+
+
+            }
         }
 
+
+
         // this is vehicle of line, marked as circle on map
-        Circle vehicle = new Circle(transportLine.getStopsMap().get(0).getCoordinate().getX(), transportLine.getStopsMap().get(0).getCoordinate().getY(), 5);
+        Circle vehicle = new Circle(transportLine.getStopsMap().get(0).getCoordinate().getX(), transportLine.getStopsMap().get(0).getCoordinate().getY(), 10);
         vehicle.setStroke(Color.AZURE);
+        vehicle.setFill(Color.PINK);
         vehicle.setStrokeWidth(5);
 
         Timeline timeline = new Timeline();
 
         // add all keyframes to timeline - one keyframe means path from one coordinate to another coordinate
         int delta_time = 0;
+        //int next_position_index = 0;
+        KeyFrame waiting_in_stop = null;
         for (int i = 0; i < line_coordinates.size()-1; i++)
         {
+            //next_position_index = i + 1;
+            for (Stop s : line_stops)
+            {
+                if (line_coordinates.get(i).getX() == s.getCoordinate().getX() && line_coordinates.get(i).getY() == s.getCoordinate().getY())
+                {
+                    waiting_in_stop = new KeyFrame(Duration.seconds(delta_time+2), // this means waiting in stop for some time
+                            new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i).getX()),
+                            new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i).getY()));
+
+                    delta_time = delta_time + 2;
+
+                    break;
+                }
+            }
+
+
             KeyFrame end = new KeyFrame(Duration.seconds(delta_time+2), // this means that the path from one coordinate to another lasts 2 seconds
                     new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i+1).getX()),
                     new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i+1).getY()));
-            timeline.getKeyFrames().addAll(end);
+
+
+            if (waiting_in_stop != null)
+            {
+                timeline.getKeyFrames().addAll(end, waiting_in_stop);
+            }
+            else
+            {
+                timeline.getKeyFrames().addAll(end);
+            }
+
             delta_time = delta_time + 2;
         }
 
@@ -307,6 +359,87 @@ public class MainWindow extends Application {
         timeline.play(); // play final animation
 
         root.getChildren().add(vehicle);
+
+        vehicle.setOnMouseClicked(
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        if (vehicle.getFill() == Color.PINK) {
+                            vehicle.setFill(Color.ORANGE);
+                        }
+                        else
+                        {
+                            vehicle.setFill(Color.PINK);
+                        }
+
+                        int vehicle_actual_x = (int) Math.round(vehicle.getCenterX());
+                        int vehicle_actual_y = (int) Math.round(vehicle.getCenterY());
+
+                        Coordinate vehicle_actual_coordinates = new Coordinate(vehicle_actual_x, vehicle_actual_y);
+
+                        ArrayList<String> past_stops = new ArrayList<String>();
+
+                        for (int i = 0; i < line_coordinates.size() - 1; i++)
+                        {
+                            Coordinate coordinates1 = line_coordinates.get(i);
+                            Coordinate coordinates2 = line_coordinates.get(i + 1);
+                            String id_coordinates_2 = line_coordinates_ids.get(i+1);
+                            System.out.println("ID of next coordinate");
+                            System.out.println(id_coordinates_2);
+                            System.out.println(line_coordinates_ids.indexOf(id_coordinates_2));
+
+                            if (vehicle_actual_coordinates.isBetweenTwoCoordinates(coordinates1, coordinates2) == true)
+                            {
+                                System.out.println("Next coordinate of stop: " + coordinates2.getX() + ", " + coordinates2.getY());
+
+                                for (int j = 0; j < line_coordinates_ids.size()- 1; j++)
+                                {
+                                    if (j < line_coordinates_ids.indexOf(id_coordinates_2) && line_coordinates_ids.get(j).contains("Stop"))
+                                    {
+                                        System.out.println("Previous stops:");
+                                        System.out.println(line_coordinates_ids.get(j));
+                                    }
+                                    else
+                                    {
+                                        if (line_coordinates_ids.get(j).contains("Stop"))
+                                        {
+                                            System.out.println("Next stop");
+                                            System.out.println(line_coordinates_ids.get(j));
+                                            break;
+                                        }
+                                    }
+
+                                }
+
+                                for (Stop stop : line_stops)
+                                {
+                                    if (coordinates2.getX() == stop.getCoordinate().getX() && coordinates2.getY() == stop.getCoordinate().getY())
+                                    {
+                                        System.out.println("Next stop of line is: " + stop.getId() + " on street: " + stop.getStreet().getId());
+                                        break;
+                                    }
+
+                                    else
+                                    {
+                                        past_stops.add(stop.getId());
+                                    }
+
+                                }
+                                break;
+                            }
+                        }
+
+                        /*
+                        System.out.println("Printing already past stops:");
+                        for (String stop_id : past_stops)
+                        {
+                            System.out.println(stop_id);
+                        }
+
+                         */
+                    }
+                }
+        );
 
         stage.setScene(scene);
         stage.show(); // show GUI scene
