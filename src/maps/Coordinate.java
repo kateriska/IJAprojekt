@@ -62,6 +62,28 @@ public class Coordinate {
         return 1;
     }
 
+    public boolean isBetweenTwoCoordinates(Coordinate coordinate1, Coordinate coordinate2) {
+
+        double distance1 = Math.sqrt(Math.pow((coordinate1.getX() - this.getX()), 2) + Math.pow((coordinate1.getY() - this.getY()), 2));
+        double distance2 = Math.sqrt(Math.pow((this.getX() - coordinate2.getX()), 2) + Math.pow((this.getY() - coordinate2.getY()), 2));
+        double distance3 = Math.sqrt(Math.pow((coordinate1.getX() - coordinate2.getX()), 2) + Math.pow((coordinate1.getY() - coordinate2.getY()), 2));
+
+        long result1 = Math.round(distance1 + distance2);
+        long result2 = Math.round(distance3);
+        if (result1 == result2)
+        {
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+
+
+    }
+
 
 
 
