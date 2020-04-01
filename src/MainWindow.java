@@ -264,6 +264,7 @@ public class MainWindow extends Application {
         }
 
         line_coordinates.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate());
+        line_coordinates_ids.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getId());
         ArrayList<Stop> line_stops = new ArrayList<Stop>();
         // print the final path of transportline
         for (Coordinate c : line_coordinates)
@@ -277,8 +278,6 @@ public class MainWindow extends Application {
                     line_stops.add(s);
 
                 }
-
-
             }
         }
 
@@ -377,66 +376,36 @@ public class MainWindow extends Application {
 
                         Coordinate vehicle_actual_coordinates = new Coordinate(vehicle_actual_x, vehicle_actual_y);
 
-                        ArrayList<String> past_stops = new ArrayList<String>();
-
                         for (int i = 0; i < line_coordinates.size() - 1; i++)
                         {
                             Coordinate coordinates1 = line_coordinates.get(i);
                             Coordinate coordinates2 = line_coordinates.get(i + 1);
                             String id_coordinates_2 = line_coordinates_ids.get(i+1);
-                            System.out.println("ID of next coordinate");
-                            System.out.println(id_coordinates_2);
-                            System.out.println(line_coordinates_ids.indexOf(id_coordinates_2));
+
+                            System.out.println("ID of next coordinate: " + id_coordinates_2);
 
                             if (vehicle_actual_coordinates.isBetweenTwoCoordinates(coordinates1, coordinates2) == true)
                             {
                                 System.out.println("Next coordinate of stop: " + coordinates2.getX() + ", " + coordinates2.getY());
-
-                                for (int j = 0; j < line_coordinates_ids.size()- 1; j++)
+                                System.out.println("Previous stops:");
+                                for (int j = 0; j < line_coordinates_ids.size(); j++)
                                 {
                                     if (j < line_coordinates_ids.indexOf(id_coordinates_2) && line_coordinates_ids.get(j).contains("Stop"))
                                     {
-                                        System.out.println("Previous stops:");
                                         System.out.println(line_coordinates_ids.get(j));
                                     }
                                     else
                                     {
                                         if (line_coordinates_ids.get(j).contains("Stop"))
                                         {
-                                            System.out.println("Next stop");
-                                            System.out.println(line_coordinates_ids.get(j));
+                                            System.out.println("Next stop is " + line_coordinates_ids.get(j));
                                             break;
                                         }
                                     }
-
-                                }
-
-                                for (Stop stop : line_stops)
-                                {
-                                    if (coordinates2.getX() == stop.getCoordinate().getX() && coordinates2.getY() == stop.getCoordinate().getY())
-                                    {
-                                        System.out.println("Next stop of line is: " + stop.getId() + " on street: " + stop.getStreet().getId());
-                                        break;
-                                    }
-
-                                    else
-                                    {
-                                        past_stops.add(stop.getId());
-                                    }
-
                                 }
                                 break;
                             }
                         }
-
-                        /*
-                        System.out.println("Printing already past stops:");
-                        for (String stop_id : past_stops)
-                        {
-                            System.out.println(stop_id);
-                        }
-
-                         */
                     }
                 }
         );
