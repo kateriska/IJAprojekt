@@ -200,88 +200,12 @@ public class MainWindow extends Application {
             }
         }
 
-        Coordinate next_street1 = null;
-        Coordinate next_street2 = null;
-        Street next_street = null;
-        ArrayList<Coordinate> line_coordinates = new ArrayList<Coordinate>();
-        ArrayList<String> line_coordinates_ids = new ArrayList<String>();
-        /*
-        this is loop for adding all points which vehicle needs to go through in line
-        it means - all stops, end coordinates of street or three coordinates in case of right angle streets
-         */
-        for (int i = 0; i < transportLine.getStreetsMap().size(); i++)
-        {
-            Street s = transportLine.getStreetsMap().get(i);
-            Coordinate this_street1 = s.getCoordinates().get(0);
-            Coordinate this_street2 = s.getCoordinates().get(2);
-
-            if (i + 1 < transportLine.getStreetsMap().size())
-            {
-                next_street = transportLine.getStreetsMap().get(i+1);
-                next_street1 = next_street.getCoordinates().get(0);
-                next_street2 = next_street.getCoordinates().get(2);
-            }
-            else
-            {
-                break;
-            }
-
-            for (Stop stop : transportLine.getStopsMap())
-            {
-                if (stop.getStreet().equals(s))
-                {
-                    line_coordinates.add(stop.getCoordinate());
-                    line_coordinates_ids.add(stop.getId());
-                }
-            }
-
-            //11
-            if (this_street1.getX() == next_street1.getX() && this_street1.getY() == next_street1.getY())
-            {
-                line_coordinates.add(this_street1);
-                line_coordinates_ids.add(s.getId());
-            }
-            //12
-            else if (this_street1.getX() == next_street2.getX() && this_street1.getY() == next_street2.getY())
-            {
-                line_coordinates.add(this_street1);
-                line_coordinates_ids.add(s.getId());
-            }
-            // 21
-            else if (this_street2.getX() == next_street1.getX() && this_street2.getY() == next_street1.getY())
-            {
-                line_coordinates.add(this_street2);
-                line_coordinates_ids.add(s.getId());
-            }
-            //22
-            else if (this_street2.getX() == next_street2.getX() && this_street2.getY() == next_street2.getY())
-            {
-                line_coordinates.add(this_street2);
-                line_coordinates_ids.add(s.getId());
-            }
-
-
-        }
-
-        line_coordinates.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getCoordinate());
-        line_coordinates_ids.add(transportLine.getStopsMap().get(transportLine.getStopsMap().size()-1).getId());
-        ArrayList<Stop> line_stops = new ArrayList<Stop>();
-        // print the final path of transportline
-        for (Coordinate c : line_coordinates)
-        {
-            //System.out.println(c.getX() + ", " + c.getY());
-            for (Stop s : stops_list)
-            {
-                if (s.getCoordinate().getX() == c.getX() && s.getCoordinate().getY() == c.getY())
-                {
-                    System.out.println(s.getId());
-                    line_stops.add(s);
-
-                }
-            }
-        }
-
-
+        // coordinates of path for vehicle on transportline
+        ArrayList<Coordinate> line_coordinates = transportLine.transportLinePath();
+        // ids of coordinates of path for vehicle on transportline
+        ArrayList<String> line_coordinates_ids = transportLine.transportLinePathIDs();
+        // all stops for transportline
+        List<Stop> line_stops = transportLine.getStopsMap();
 
         // this is vehicle of line, marked as circle on map
         Circle vehicle = new Circle(transportLine.getStopsMap().get(0).getCoordinate().getX(), transportLine.getStopsMap().get(0).getCoordinate().getY(), 10);
