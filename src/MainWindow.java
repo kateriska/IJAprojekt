@@ -212,7 +212,7 @@ public class MainWindow extends Application {
             vehicle.setStroke(Color.AZURE);
             vehicle.setFill(Color.PINK);
             vehicle.setStrokeWidth(5);
-            t.addVehicleToLine(vehicle);
+            t.setVehicle(vehicle);
 
             Timeline timeline = new Timeline();
 
@@ -260,22 +260,22 @@ public class MainWindow extends Application {
 
         // this is vehicle of line, marked as circle on map
         for (TransportLine t : all_transport_lines_list) {
-            //System.out.println(t.getLineVehicles());
-            for (Circle vehicle : t.getLineVehicles()) {
-                vehicle.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            System.out.println(t.getLineVehicle());
+                //Circle vehicle = t.getLineVehicle();
+                t.getLineVehicle().setOnMouseClicked(new EventHandler<MouseEvent>() {
                             @Override
                             public void handle(MouseEvent event) {
-                                if (vehicle.getFill() == Color.PINK) {
-                                    vehicle.setFill(Color.ORANGE);
+                                if (t.getLineVehicle().getFill() == Color.PINK) {
+                                    t.getLineVehicle().setFill(Color.ORANGE);
                                 }
                                 else {
-                                    vehicle.setFill(Color.PINK);
+                                    t.getLineVehicle().setFill(Color.PINK);
                                 }
 
                                 System.out.println("This is line number " + t.getLineId());
 
-                                int vehicle_actual_x = (int) Math.round(vehicle.getCenterX());
-                                int vehicle_actual_y = (int) Math.round(vehicle.getCenterY());
+                                int vehicle_actual_x = (int) Math.round(t.getLineVehicle().getCenterX());
+                                int vehicle_actual_y = (int) Math.round(t.getLineVehicle().getCenterY());
 
                                 Coordinate vehicle_actual_coordinates = new Coordinate(vehicle_actual_x, vehicle_actual_y);
 
@@ -302,7 +302,7 @@ public class MainWindow extends Application {
                             }
                         }
                 );
-            }
+
         }
 
         for (Line l : all_streets_lines)
@@ -311,19 +311,25 @@ public class MainWindow extends Application {
                 @Override
                 public void handle(MouseEvent event) {
                     for (TransportLine t : all_transport_lines_list) {
-                        Timeline timeline_changed = new Timeline();
+                        Timeline timeline_changed = t.getLineMovement();
+                        //System.out.println(timeline_changed);
                         for (Street s : t.getStreetsMap()) {
                             if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY()) {
                                 System.out.println("Street is slower now from line");
                                 t.getLineMovement().stop();
-                                root.getChildren().remove(t.getLineVehicles().get(0));
+                                //root.getChildren().remove(t.getLineVehicles().get(0));
+
+                                root.getChildren().remove(t.getLineVehicle());
+                                t.clearLineVehicle();
                                 Circle vehicle_changed = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
-                                vehicle_changed.setStroke(Color.DARKBLUE);
-                                vehicle_changed.setFill(Color.ORANGE);
+                                vehicle_changed.setStroke(Color.AZURE);
+                                vehicle_changed.setFill(Color.BLACK);
                                 vehicle_changed.setStrokeWidth(5);
-                                //t.addVehicleToLine(vehicle_changed);
+                                t.setVehicle(vehicle_changed);
                                 root.getChildren().addAll(vehicle_changed);
+
                                 l.setStroke(Color.BLACK);
+
                                 ArrayList<Integer> affected_points_indexes = new ArrayList<Integer>();
                                 for (int i = 0; i < t.transportLinePath().size(); i++) {
                                     if (t.transportLinePath().get(i).isBetweenTwoCoordinates(s.begin(), s.end()) || (t.transportLinePath().get(i).getX() == s.begin().getX() && t.transportLinePath().get(i).getY() == s.begin().getY()) || (t.transportLinePath().get(i).getX() == s.end().getX() && t.transportLinePath().get(i).getY() == s.end().getY())) {
@@ -407,21 +413,19 @@ public class MainWindow extends Application {
                                     } else {
                                         timeline_changed.getKeyFrames().addAll(end);
                                     }
-
                                     delta_time = delta_time + 2;
                                 }
                             }
                         }
                         timeline_changed.setCycleCount(Animation.INDEFINITE);
                         timeline_changed.play();
-                        //System.out.println(t.getLineVehicles());
+                        t.setLineMovement(timeline_changed);
+                        System.out.println(timeline_changed);
                     }
-
                 }
             }
             );
         }
-
         stage.setScene(scene);
         stage.show(); // show GUI scene
     }
@@ -587,5 +591,17 @@ public class MainWindow extends Application {
         System.out.println(res);
 
         return transport_line;
+    }
+
+    public void closeStreet(ArrayList<Street> streetArrayList)
+    {
+        for (Street s : streetArrayList)
+        {
+            if (s.getId().equals("Street4"))
+            {
+                Street closed_street = s;
+            }
+        }
+
     }
 }
