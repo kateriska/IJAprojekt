@@ -1,16 +1,31 @@
 package maps;
 
+import javafx.scene.shape.Circle;
+
 import java.util.ArrayList;
 import java.util.List;
+import javafx.animation.Timeline;
 
 public class TransportLine {
     private String line_id;
     private List<Street> streets_map = new ArrayList<Street>();
     private List<Stop> stops_map = new ArrayList<Stop>();
+    ArrayList<Circle> all_line_vehicles = new ArrayList<Circle>();
+    Timeline timeline = new Timeline();
 
-    public TransportLine(String line_id)
+    public TransportLine()
+    {
+
+    }
+
+    public void setLineId(String line_id)
     {
         this.line_id = line_id;
+    }
+
+    public String getLineId()
+    {
+        return line_id;
     }
     public boolean addStop(Stop stop)
     {
@@ -37,9 +52,9 @@ public class TransportLine {
         return true;
     }
 
-    public static TransportLine defaultLine(java.lang.String id)
+    public static TransportLine defaultLine()
     {
-        TransportLine new_line = new TransportLine(id);
+        TransportLine new_line = new TransportLine();
         return new_line;
     }
 
@@ -71,10 +86,6 @@ public class TransportLine {
 
     }
 
-    public String getId()
-    {
-        return line_id;
-    }
 
     public List<Stop> getStopsMap()
     {
@@ -213,6 +224,27 @@ public class TransportLine {
 
         line_coordinates_ids.add(getStopsMap().get(getStopsMap().size()-1).getId());
         return line_coordinates_ids;
+    }
+
+    public void addVehicleToLine(Circle c)
+    {
+        all_line_vehicles.add(c);
+        return;
+    }
+
+    public ArrayList<Circle> getLineVehicles()
+    {
+        return all_line_vehicles;
+    }
+
+    public void setLineMovement(Timeline t)
+    {
+        timeline = t;
+    }
+
+    public Timeline getLineMovement()
+    {
+        return timeline;
     }
 
 
