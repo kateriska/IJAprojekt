@@ -12,6 +12,7 @@ public class TransportLine {
     private List<Stop> stops_map = new ArrayList<Stop>();
     ArrayList<Circle> all_line_vehicles = new ArrayList<Circle>();
     Timeline timeline = new Timeline();
+    Circle vehicle = null;
 
     public TransportLine()
     {
@@ -226,15 +227,21 @@ public class TransportLine {
         return line_coordinates_ids;
     }
 
-    public void addVehicleToLine(Circle c)
+    public void setVehicle(Circle c)
     {
-        all_line_vehicles.add(c);
+        vehicle = c;
         return;
     }
 
-    public ArrayList<Circle> getLineVehicles()
+    public Circle getLineVehicle()
     {
-        return all_line_vehicles;
+        return vehicle;
+    }
+
+    public void clearLineVehicle()
+    {
+        vehicle = null;
+        return;
     }
 
     public void setLineMovement(Timeline t)
