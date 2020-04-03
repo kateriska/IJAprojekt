@@ -68,6 +68,8 @@ public class MainWindow extends Application {
         streets with three coordinates (right angle streets) with red - need to create two lines instead one for this type of streets
          */
 
+        ArrayList<Line> all_streets_lines = new ArrayList<Line>();
+
         for (Street s : streets_list)
         {
             if (s.getCoordinates().get(1) != null)
@@ -78,6 +80,7 @@ public class MainWindow extends Application {
                 line1.setStrokeWidth(5);
                 line2.setStroke(Color.DARKRED);
                 line2.setStrokeWidth(5);
+                all_streets_lines.add(line1);
                 root.getChildren().addAll(line1, line2);
 
             }
@@ -86,6 +89,7 @@ public class MainWindow extends Application {
                 line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(),   s.getCoordinates().get(2).getX(),   s.getCoordinates().get(2).getY());
                 line1.setStroke(Color.YELLOW);
                 line1.setStrokeWidth(5);
+                all_streets_lines.add(line1);
                 root.getChildren().addAll(line1);
             }
         }
@@ -120,6 +124,7 @@ public class MainWindow extends Application {
         and highlight only part from stop to end coordinate of street for beginning and end street, because
         the line is not travel through all street but only part of it
          */
+
         for (Street s : streets_list)
         {
             if (transportLine.getStreetsMap().get(0).equals(s)) // first street of line
@@ -188,6 +193,7 @@ public class MainWindow extends Application {
                     line1.setStrokeWidth(5);
                     line2.setStroke(Color.PINK);
                     line2.setStrokeWidth(5);
+                    all_streets_lines.add(line1);
                     root.getChildren().addAll(line1, line2);
                 }
                 else
@@ -195,6 +201,7 @@ public class MainWindow extends Application {
                     line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(),   s.getCoordinates().get(2).getX(),   s.getCoordinates().get(2).getY());
                     line1.setStroke(Color.PINK);
                     line1.setStrokeWidth(5);
+                    all_streets_lines.add(line1);
                     root.getChildren().addAll(line1);
                 }
             }
@@ -253,25 +260,7 @@ public class MainWindow extends Application {
 
             delta_time = delta_time + 2;
         }
-
-
-        /*
-        Duration SEC_5 = Duration.millis(5000);
-        Duration SEC_10 = Duration.millis(10000);
-        System.out.println("Location before relocation = " + vehicle.centerXProperty() + ","
-                + vehicle.centerYProperty() + ")");
-        Timeline timeline = new Timeline();
-
-        KeyFrame end = new KeyFrame(SEC_5,
-                new KeyValue(vehicle.centerXProperty(), 189),
-                new KeyValue(vehicle.centerYProperty(), 189));
-        KeyFrame end2 = new KeyFrame(SEC_10,
-                new KeyValue(vehicle.centerXProperty(), 60),
-                new KeyValue(vehicle.centerYProperty(), 289));
-
-        timeline.getKeyFrames().addAll(end, end2);
-
-         */
+        
         timeline.setOnFinished(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -279,6 +268,7 @@ public class MainWindow extends Application {
                         + "," + vehicle.centerYProperty() + ")");
             }
         });
+        timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play(); // play final animation
 
         root.getChildren().add(vehicle);
@@ -333,6 +323,37 @@ public class MainWindow extends Application {
                     }
                 }
         );
+
+        for (Line l : all_streets_lines)
+        {
+            l.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent event)
+                {
+                    l.setStroke(Color.BLACK);
+
+                    for (Street s : transportLine.getStreetsMap())
+                    {
+                        if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY())
+                        {
+                            System.out.println("Street is slower now from line");
+
+                            for (int i = 0; i < transportLine.transportLinePath().size(); i++)
+                            {
+                                if (transportLine.transportLinePath().get(i).isBetweenTwoCoordinates(s.begin(), s.end()) || (transportLine.transportLinePath().get(i).getX() == s.begin().getX() && transportLine.transportLinePath().get(i).getY() == s.begin().getY()) || (transportLine.transportLinePath().get(i).getX() == s.end().getX() && transportLine.transportLinePath().get(i).getY() == s.end().getY()))
+                                {
+                                    System.out.println("Affected points: " + transportLine.transportLinePath().get(i).getX() +", " + transportLine.transportLinePath().get(i).getY());
+
+                                    System.out.println(i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            );
+        }
 
         stage.setScene(scene);
         stage.show(); // show GUI scene
