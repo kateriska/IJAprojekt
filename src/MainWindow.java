@@ -38,6 +38,7 @@ public class MainWindow extends Application {
         ArrayList<Street> streets_list = new ArrayList<Street>();
         ArrayList<Stop> stops_list = new ArrayList<Stop>();
 
+        // TASK - add sliding along map and zoom of map and other controllers of GUI
         BorderPane root = new BorderPane(); // create new pane for GUI
         Scene scene = new Scene(root, 1000, 771); // set width and height of window
 
