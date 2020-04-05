@@ -26,6 +26,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.scene.paint.Paint;
 
 public class MainWindow extends Application {
 
@@ -106,6 +107,9 @@ public class MainWindow extends Application {
         TransportLine transportLine = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule.txt");
         TransportLine transportLine2 = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule2.txt");
         TransportLine transportLine3 = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule3.txt");
+        transportLine.setTransportLineColor(Color.SKYBLUE);
+        transportLine2.setTransportLineColor(Color.SANDYBROWN);
+        transportLine3.setTransportLineColor(Color.PINK);
         ArrayList<TransportLine> all_transport_lines_list = new ArrayList<TransportLine>();
         all_transport_lines_list.add(transportLine);
         all_transport_lines_list.add(transportLine2);
@@ -115,7 +119,7 @@ public class MainWindow extends Application {
             for (TransportLine t : all_transport_lines_list) {
                 if (t.getStopsMap().contains(stop)) {
                     Circle circle = new Circle(stop.getCoordinate().getX(), stop.getCoordinate().getY(), 5);
-                    circle.setStroke(Color.PINK);
+                    circle.setStroke(t.getTransportLineColor());
                     circle.setStrokeWidth(5);
                     root.getChildren().addAll(circle);
                 }
@@ -145,13 +149,13 @@ public class MainWindow extends Application {
                     if (begin_street_1.equals(second_street_1) || begin_street_1.equals(second_street_2)) {
                         System.out.println("Highlight part of first street from first stop");
                         line1 = new Line(begin_stop_x, begin_stop_y, begin_street_1.getX(), begin_street_1.getY());
-                        line1.setStroke(Color.PINK);
+                        line1.setStroke(t.getTransportLineColor());
                         line1.setStrokeWidth(5);
                         root.getChildren().addAll(line1);
                     } else if (begin_street_2.equals(second_street_1) || begin_street_2.equals(second_street_2)) {
                         System.out.println("Highlight part of end street from end stop");
                         line1 = new Line(begin_stop_x, begin_stop_y, begin_street_2.getX(), begin_street_2.getY());
-                        line1.setStroke(Color.PINK);
+                        line1.setStroke(t.getTransportLineColor());
                         line1.setStrokeWidth(5);
                         root.getChildren().addAll(line1);
                     }
@@ -169,13 +173,13 @@ public class MainWindow extends Application {
                     if (end_street_1.equals(nexttolast_street_1) || end_street_1.equals(nexttolast_street_2)) {
                         System.out.println("Highlight last street from stop1");
                         line1 = new Line(end_stop_x, end_stop_y, end_street_1.getX(), end_street_1.getY());
-                        line1.setStroke(Color.PINK);
+                        line1.setStroke(t.getTransportLineColor());
                         line1.setStrokeWidth(5);
                         root.getChildren().addAll(line1);
                     } else if (end_street_2.equals(nexttolast_street_1) || end_street_2.equals(nexttolast_street_2)) {
                         System.out.println("Highlight last street from stop1");
                         line1 = new Line(end_stop_x, end_stop_y, end_street_2.getX(), end_street_2.getY());
-                        line1.setStroke(Color.PINK);
+                        line1.setStroke(t.getTransportLineColor());
                         line1.setStrokeWidth(5);
                         root.getChildren().addAll(line1);
                     }
@@ -183,15 +187,15 @@ public class MainWindow extends Application {
                     if (s.getCoordinates().get(1) != null) {
                         line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY());
                         line2 = new Line(s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
-                        line1.setStroke(Color.PINK);
+                        line1.setStroke(t.getTransportLineColor());
                         line1.setStrokeWidth(5);
-                        line2.setStroke(Color.PINK);
+                        line2.setStroke(t.getTransportLineColor());
                         line2.setStrokeWidth(5);
                         all_streets_lines.add(line1);
                         root.getChildren().addAll(line1, line2);
                     } else {
                         line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
-                        line1.setStroke(Color.PINK);
+                        line1.setStroke(t.getTransportLineColor());
                         line1.setStrokeWidth(5);
                         all_streets_lines.add(line1);
                         root.getChildren().addAll(line1);
@@ -211,7 +215,7 @@ public class MainWindow extends Application {
             // create original vehicle for line
             Circle vehicle = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
             vehicle.setStroke(Color.AZURE);
-            vehicle.setFill(Color.PINK);
+            vehicle.setFill(t.getTransportLineColor());
             vehicle.setStrokeWidth(5);
             t.setVehicle(vehicle);
 
@@ -224,11 +228,11 @@ public class MainWindow extends Application {
             for (int i = 0; i < line_coordinates.size() - 1; i++) {
                 for (Stop s : line_stops) {
                     if (line_coordinates.get(i).getX() == s.getCoordinate().getX() && line_coordinates.get(i).getY() == s.getCoordinate().getY()) {
-                        waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 2), // this means waiting in stop for some time
+                        waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 1), // this means waiting in stop for some time
                                 new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i).getX()),
                                 new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i).getY()));
 
-                        delta_time = delta_time + 2;
+                        delta_time = delta_time + 1;
                         break;
                     }
                 }
@@ -269,11 +273,11 @@ public class MainWindow extends Application {
                 t.getLineVehicle().setOnMouseClicked(new EventHandler<MouseEvent>() {
                             @Override
                             public void handle(MouseEvent event) {
-                                if (t.getLineVehicle().getFill() == Color.PINK) {
-                                    t.getLineVehicle().setFill(Color.ORANGE);
+                                if (t.getLineVehicle().getFill() == t.getTransportLineColor()) {
+                                    t.getLineVehicle().setFill(Color.LIGHTGREEN);
                                 }
                                 else {
-                                    t.getLineVehicle().setFill(Color.PINK);
+                                    t.getLineVehicle().setFill(t.getTransportLineColor());
                                 }
 
                                 System.out.println("This is line number " + t.getLineId() + " with route " + t.printRoute());
@@ -351,11 +355,11 @@ public class MainWindow extends Application {
                                 for (int i = 0; i < affected_points_indexes.get(0); i++) {
                                     for (Stop stop : t.getStopsMap()) {
                                         if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
-                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 2), // this means waiting in stop for some time
+                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 1), // this means waiting in stop for some time
                                                     new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i).getX()),
                                                     new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i).getY()));
 
-                                            delta_time = delta_time + 2;
+                                            delta_time = delta_time + 1;
                                             break;
                                         }
                                     }
@@ -376,16 +380,16 @@ public class MainWindow extends Application {
                                 for (int i = affected_points_indexes.get(0); i < affected_points_indexes.get(affected_points_indexes.size() - 1); i++) {
                                     for (Stop stop : t.getStopsMap()) {
                                         if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
-                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 5), // this means waiting in stop for some time
+                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 2), // this means waiting in stop for some time
                                                     new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i).getX()),
                                                     new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i).getY()));
 
-                                            delta_time = delta_time + 5;
+                                            delta_time = delta_time + 2;
                                             break;
                                         }
                                     }
 
-                                    KeyFrame end = new KeyFrame(Duration.seconds(delta_time + 5), // this means that the path from one coordinate to another lasts 2 seconds
+                                    KeyFrame end = new KeyFrame(Duration.seconds(delta_time + 8), // this means that the path from one coordinate to another lasts 2 seconds
                                             new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i + 1).getX()),
                                             new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i + 1).getY()));
 
@@ -395,17 +399,17 @@ public class MainWindow extends Application {
                                         timeline_changed.getKeyFrames().addAll(end);
                                     }
 
-                                    delta_time = delta_time + 5;
+                                    delta_time = delta_time + 8;
                                 }
 
                                 for (int i = affected_points_indexes.get(affected_points_indexes.size() - 1); i < t.transportLinePath().size() - 1; i++) {
                                     for (Stop stop : t.getStopsMap()) {
                                         if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
-                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 2), // this means waiting in stop for some time
+                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 1), // this means waiting in stop for some time
                                                     new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i).getX()),
                                                     new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i).getY()));
 
-                                            delta_time = delta_time + 2;
+                                            delta_time = delta_time + 1;
 
                                             break;
                                         }
@@ -427,7 +431,7 @@ public class MainWindow extends Application {
                         timeline_changed.setCycleCount(Animation.INDEFINITE);
                         timeline_changed.play();
                         t.setLineMovement(timeline_changed);
-                        System.out.println(timeline_changed);
+                        //System.out.println(timeline_changed);
                     }
                 }
             }
