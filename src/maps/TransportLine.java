@@ -5,9 +5,7 @@ import javafx.scene.shape.Circle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.*;
-
-
+import javafx.scene.paint.Paint;
 import javafx.animation.Timeline;
 
 public class TransportLine {
@@ -17,6 +15,7 @@ public class TransportLine {
     ArrayList<Circle> all_line_vehicles = new ArrayList<Circle>();
     Timeline timeline = new Timeline();
     Circle vehicle = null;
+    Paint line_color = null;
 
     public TransportLine()
     {
@@ -268,6 +267,16 @@ public class TransportLine {
     public Timeline getLineMovement()
     {
         return timeline;
+    }
+
+    public void setTransportLineColor(Paint p)
+    {
+        line_color = p;
+    }
+
+    public Paint getTransportLineColor()
+    {
+        return line_color;
     }
 
 
