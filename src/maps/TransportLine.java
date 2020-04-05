@@ -4,6 +4,10 @@ import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.*;
+
+
 import javafx.animation.Timeline;
 
 public class TransportLine {
@@ -35,7 +39,7 @@ public class TransportLine {
 
         if (streets_map.size() > 1)
         {
-            System.out.println("More than one street in line");
+            //System.out.println("More than one street in line");
             if (streets_map.get(0).follows(streets_map.get(1)) == false || streets_map.get(0).follows(streets_map.get(1)) == false)
             {
                 stops_map.remove(stop);
@@ -85,6 +89,18 @@ public class TransportLine {
 
         return roads_map;
 
+    }
+
+    public String printRoute()
+    {
+        String res = this.getRoute().stream()
+                .map(entry -> entry.getKey().getId()
+                        + ":"
+                        + entry.getValue()
+                        + ";")
+                .collect(Collectors.joining());
+        System.out.println(res);
+        return res;
     }
 
 
