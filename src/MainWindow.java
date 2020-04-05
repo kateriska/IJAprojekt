@@ -50,6 +50,7 @@ public class MainWindow extends Application {
         root.setBackground(new Background(myBI)); // set map as background, with no repeat and also some free space for TO DO GUI components
         // beginning of coordinates [0,0] is in left upon corner of whole window and also it is beginning for image
 
+        /*
         Point2D p = MouseInfo.getPointerInfo().getLocation();
 
         root.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -60,6 +61,7 @@ public class MainWindow extends Application {
                 System.out.println(event.getSceneY());
             }
         });
+        */
 
         streets_list = setMapStreets();
 
@@ -67,7 +69,6 @@ public class MainWindow extends Application {
         highlight all street objects in map - streets with two coordinates with yellow and
         streets with three coordinates (right angle streets) with red - need to create two lines instead one for this type of streets
          */
-
         ArrayList<Line> all_streets_lines = new ArrayList<Line>();
 
         for (Street s : streets_list) {
@@ -108,7 +109,7 @@ public class MainWindow extends Application {
         all_transport_lines_list.add(transportLine);
         all_transport_lines_list.add(transportLine2);
         all_transport_lines_list.add(transportLine3);
-        for (Stop stop : stops_list) // highlight stop object from transport line with pink color
+        for (Stop stop : stops_list) // highlight stop object from transport lines with pink color
         {
             for (TransportLine t : all_transport_lines_list) {
                 if (t.getStopsMap().contains(stop)) {
@@ -122,12 +123,11 @@ public class MainWindow extends Application {
         }
 
         /*
-        highlight the journey of line with pink color -
+        highlight the journey of lines with pink color -
         it means highlight all street from beginning to end when the line is travel through all street
         and highlight only part from stop to end coordinate of street for beginning and end street, because
         the line is not travel through all street but only part of it
          */
-
         for (TransportLine t : all_transport_lines_list) {
             for (Street s : streets_list) {
                 if (t.getStreetsMap().get(0).equals(s)) // first street of line
@@ -207,7 +207,7 @@ public class MainWindow extends Application {
             ArrayList<String> line_coordinates_ids = t.transportLinePathIDs();
             // all stops for transportline
             List<Stop> line_stops = t.getStopsMap();
-
+            // create original vehicle for line
             Circle vehicle = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
             vehicle.setStroke(Color.AZURE);
             vehicle.setFill(Color.PINK);
@@ -251,14 +251,17 @@ public class MainWindow extends Application {
                             + "," + vehicle.centerYProperty() + ")");
                 }
             });
-            timeline.setCycleCount(Timeline.INDEFINITE);
-            t.setLineMovement(timeline);
+            timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetations
+            t.setLineMovement(timeline); // set movement of specified line
             timeline.play(); // play final animation
 
             root.getChildren().add(vehicle);
         }
 
-        // this is vehicle of line, marked as circle on map
+        /*
+        after clicking on original vehicle of line show some info on console
+        TASK - Show this info about vehicle in some textbox under the map
+         */
         for (TransportLine t : all_transport_lines_list) {
             System.out.println(t.getLineVehicle());
                 //Circle vehicle = t.getLineVehicle();
@@ -272,7 +275,7 @@ public class MainWindow extends Application {
                                     t.getLineVehicle().setFill(Color.PINK);
                                 }
 
-                                System.out.println("This is line number " + t.getLineId());
+                                System.out.println("This is line number " + t.getLineId() + " with route " + t.printRoute());
 
                                 int vehicle_actual_x = (int) Math.round(t.getLineVehicle().getCenterX());
                                 int vehicle_actual_y = (int) Math.round(t.getLineVehicle().getCenterY());
@@ -288,7 +291,7 @@ public class MainWindow extends Application {
                                         System.out.println("Previous stops:");
                                         for (int j = 0; j < t.transportLinePathIDs().size(); j++) {
                                             if (j < t.transportLinePathIDs().indexOf(id_coordinates_2) && t.transportLinePathIDs().get(j).contains("Stop")) {
-                                                System.out.println(t.transportLinePathIDs().get(j));
+                                                //System.out.println(t.transportLinePathIDs().get(j));
                                             } else {
                                                 if (t.transportLinePathIDs().get(j).contains("Stop")) {
                                                     System.out.println("Next stop is " + t.transportLinePathIDs().get(j));
@@ -305,6 +308,9 @@ public class MainWindow extends Application {
 
         }
 
+        /*
+        simulation of slowing the traffic with specified street
+         */
         for (Line l : all_streets_lines)
         {
             l.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -582,17 +588,12 @@ public class MainWindow extends Application {
             }
         }
 
-        String res = transport_line.getRoute().stream()
-                .map(entry -> entry.getKey().getId()
-                        + ":"
-                        + entry.getValue()
-                        + ";")
-                .collect(Collectors.joining());
-        System.out.println(res);
+        transport_line.printRoute();
 
         return transport_line;
     }
 
+    // only simulation of new path of line after closing specified street, firstly GUI and controlers for it needs to be done
     public void closeStreet(ArrayList<Street> streetArrayList)
     {
         for (Street s : streetArrayList)
