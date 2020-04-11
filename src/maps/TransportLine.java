@@ -1,6 +1,9 @@
 package maps;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
@@ -9,6 +12,7 @@ import java.util.stream.Collectors;
 import javafx.scene.paint.Paint;
 import javafx.animation.Timeline;
 import javafx.scene.shape.Line;
+import javafx.util.Duration;
 
 public class TransportLine {
     private String line_id;
@@ -354,6 +358,61 @@ public class TransportLine {
                 s.highlightStreet(anchor_pane_map, all_streets_lines, this.getTransportLineColor());
             }
         }
+    }
+
+    // create animation of original path without slowing traffic for particular street
+    // duration - duration between neighbour coordinates - default 2 seconds
+    // stop_duration - duration of waiting in stop - default 1 second
+    public void createOriginalAnimation(AnchorPane anchor_pane_map, int duration, int stop_duration)
+    {
+        // coordinates of path for vehicle on transportline
+        ArrayList<Coordinate> line_coordinates = this.transportLinePath();
+        // ids of coordinates of path for vehicle on transportline
+        ArrayList<String> line_coordinates_ids = this.transportLinePathIDs();
+        // all stops for transportline
+        List<Stop> line_stops = this.getStopsMap();
+        // create original vehicle for line
+        Circle vehicle = new Circle(this.getStopsMap().get(0).getCoordinate().getX(), this.getStopsMap().get(0).getCoordinate().getY(), 10);
+        vehicle.setStroke(Color.AZURE);
+        vehicle.setFill(this.getTransportLineColor());
+        vehicle.setStrokeWidth(5);
+        this.setVehicle(vehicle);
+
+        Timeline timeline = new Timeline();
+
+        // add all keyframes to timeline - one keyframe means path from one coordinate to another coordinate
+        // vehicle waits in stop for 1 seconds and go to another coordinate for 2 seconds
+        int delta_time = 0;
+        KeyFrame waiting_in_stop = null;
+        for (int i = 0; i < line_coordinates.size() - 1; i++) {
+            for (Stop s : line_stops) {
+                if (line_coordinates.get(i).getX() == s.getCoordinate().getX() && line_coordinates.get(i).getY() == s.getCoordinate().getY()) {
+                    waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + stop_duration), // this means waiting in stop for some time
+                            new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i).getX()),
+                            new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i).getY()));
+
+                    delta_time = delta_time + stop_duration;
+                    break;
+                }
+            }
+            KeyFrame end = new KeyFrame(Duration.seconds(delta_time + duration), // this means that the path from one coordinate to another lasts 2 seconds
+                    new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i + 1).getX()),
+                    new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i + 1).getY()));
+
+            if (waiting_in_stop != null) {
+                timeline.getKeyFrames().addAll(end, waiting_in_stop);
+            } else {
+                timeline.getKeyFrames().addAll(end);
+            }
+
+            delta_time = delta_time + duration;
+        }
+
+        timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetition
+        this.setLineMovement(timeline); // set movement of specified line
+        timeline.play(); // play final animation
+
+        anchor_pane_map.getChildren().add(vehicle);
     }
 
 
