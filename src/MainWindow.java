@@ -162,54 +162,7 @@ public class MainWindow extends Application {
         create a vehicle (circle) for every TransportLine object and move along the path of TransportLine
          */
         for (TransportLine t : all_transport_lines_list) {
-            // coordinates of path for vehicle on transportline
-            ArrayList<Coordinate> line_coordinates = t.transportLinePath();
-            // ids of coordinates of path for vehicle on transportline
-            ArrayList<String> line_coordinates_ids = t.transportLinePathIDs();
-            // all stops for transportline
-            List<Stop> line_stops = t.getStopsMap();
-            // create original vehicle for line
-            Circle vehicle = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
-            vehicle.setStroke(Color.AZURE);
-            vehicle.setFill(t.getTransportLineColor());
-            vehicle.setStrokeWidth(5);
-            t.setVehicle(vehicle);
-
-            Timeline timeline = new Timeline();
-
-            // add all keyframes to timeline - one keyframe means path from one coordinate to another coordinate
-            // vehicle waits in stop for 1 seconds and go to another coordinate for 2 seconds
-            int delta_time = 0;
-            KeyFrame waiting_in_stop = null;
-            for (int i = 0; i < line_coordinates.size() - 1; i++) {
-                for (Stop s : line_stops) {
-                    if (line_coordinates.get(i).getX() == s.getCoordinate().getX() && line_coordinates.get(i).getY() == s.getCoordinate().getY()) {
-                        waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 1), // this means waiting in stop for some time
-                                new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i).getX()),
-                                new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i).getY()));
-
-                        delta_time = delta_time + 1;
-                        break;
-                    }
-                }
-                KeyFrame end = new KeyFrame(Duration.seconds(delta_time + 2), // this means that the path from one coordinate to another lasts 2 seconds
-                        new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i + 1).getX()),
-                        new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i + 1).getY()));
-
-                if (waiting_in_stop != null) {
-                    timeline.getKeyFrames().addAll(end, waiting_in_stop);
-                } else {
-                    timeline.getKeyFrames().addAll(end);
-                }
-
-                delta_time = delta_time + 2;
-            }
-
-            timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetition
-            t.setLineMovement(timeline); // set movement of specified line
-            timeline.play(); // play final animation
-
-            anchor_pane_map.getChildren().add(vehicle);
+            t.createOriginalAnimation(anchor_pane_map, 2,1);
         }
 
         /*
