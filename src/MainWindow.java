@@ -25,6 +25,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.scene.control.ScrollPane;
 
 public class MainWindow extends Application {
 
@@ -34,20 +35,30 @@ public class MainWindow extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        ArrayList<Street> streets_list = new ArrayList<Street>();
-        ArrayList<Stop> stops_list = new ArrayList<Stop>();
-
         // TASK - add sliding along map and zoom of map and other controllers of GUI
-        BorderPane root = new BorderPane(); // create new pane for GUI
-        Scene scene = new Scene(root, 1000, 771); // set width and height of window
+        BorderPane root = new BorderPane(); // create BorderPane as root element
+        ScrollPane scroll_pane_map = new ScrollPane();
+        AnchorPane anchor_pane_menu = new AnchorPane();
 
-        Line line1 = null;
-        Line line2 = null;
+        // put two components to BorderPane - scroll_pane_map for window with map and anchor_pane_menu for menu
+        root.setLeft(scroll_pane_map);
+        root.setRight(anchor_pane_menu);
+
+        AnchorPane anchor_pane_map = new AnchorPane(); // set anchor pane in scroll_pane_map
+        scroll_pane_map.setContent(anchor_pane_map);
+        anchor_pane_map.setPrefWidth(500);
+        anchor_pane_map.setPrefHeight(500);
+        scroll_pane_map.setPannable(true);
+        scroll_pane_map.setPrefViewportWidth(500);
+        scroll_pane_map.setPrefViewportHeight(500);
+        Scene scene = new Scene(root, 800, 700); // set width and height of window
 
         File file = new File("C:/Users/forto/IdeaProjects/proj/lib/map.png");
+
         BackgroundImage myBI = new BackgroundImage(new Image(file.toURI().toString()),
                 BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
-        root.setBackground(new Background(myBI)); // set map as background, with no repeat and also some free space for TO DO GUI components
+        anchor_pane_map.setBackground(new Background(myBI)); // set map as background, with no repeat and also some free space for TO DO GUI components
+
         // beginning of coordinates [0,0] is in left upon corner of whole window and also it is beginning for image
 
         /*
@@ -63,43 +74,23 @@ public class MainWindow extends Application {
         });
         */
 
-        streets_list = setMapStreets(); // Street objects created from file
+        ArrayList<Street> streets_list = setMapStreets(); // Street objects created from file
 
         /*
-        highlight all street objects in map - streets with two coordinates with yellow and
-        streets with three coordinates (right angle streets) with red - need to create two lines instead one for this type of streets
+        highlight all street objects in map - for right angle streets need to create two lines instead one for this type of streets
          */
         ArrayList<Line> all_streets_lines = new ArrayList<Line>();
 
         for (Street s : streets_list) {
-            if (s.getCoordinates().get(1) != null) {
-                line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY());
-                line2 = new Line(s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
-                line1.setStroke(Color.DARKRED);
-                line1.setStrokeWidth(5);
-                line2.setStroke(Color.DARKRED);
-                line2.setStrokeWidth(5);
-                all_streets_lines.add(line1);
-                root.getChildren().addAll(line1, line2);
-            } else {
-                line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
-                line1.setStroke(Color.YELLOW);
-                line1.setStrokeWidth(5);
-                all_streets_lines.add(line1);
-                root.getChildren().addAll(line1);
-            }
+            s.highlightStreet(anchor_pane_map,all_streets_lines, Color.LIGHTGREY);
         }
 
-        stops_list = setMapStops(streets_list); // objects of all Stop are created from file
+
+        ArrayList<Stop> stops_list = setMapStops(streets_list); // objects of all Stop are created from file
 
         for (Stop stop : stops_list) //  highlight all stop objects in map
         {
-            Circle circle = new Circle(stop.getCoordinate().getX(), stop.getCoordinate().getY(), 5);
-            circle.setStroke(Color.YELLOWGREEN);
-            circle.setStrokeWidth(5);
-            Text text = new Text(stop.getCoordinate().getX() + 10, stop.getCoordinate().getY() - 7, stop.getId());
-            text.setStroke(Color.YELLOWGREEN);
-            root.getChildren().addAll(circle, text);
+            stop.highlightStop(anchor_pane_map, Color.LIGHTGREY);
         }
 
         // create ScheduleLine objects from files
@@ -121,10 +112,7 @@ public class MainWindow extends Application {
         {
             for (TransportLine t : all_transport_lines_list) {
                 if (t.getStopsMap().contains(stop)) {
-                    Circle circle = new Circle(stop.getCoordinate().getX(), stop.getCoordinate().getY(), 5);
-                    circle.setStroke(t.getTransportLineColor());
-                    circle.setStrokeWidth(5);
-                    root.getChildren().addAll(circle);
+                    stop.highlightStop(anchor_pane_map, t.getTransportLineColor());
                 }
             }
 
@@ -136,75 +124,9 @@ public class MainWindow extends Application {
         and highlight only part from stop to end coordinate of street for beginning and end street, because
         the line is not travel through all street but only part of it
          */
+
         for (TransportLine t : all_transport_lines_list) {
-            for (Street s : streets_list) {
-                if (t.getStreetsMap().get(0).equals(s)) // highlight first street of line
-                {
-                    int begin_stop_x = t.getStopsMap().get(0).getCoordinate().getX();
-                    int begin_stop_y = t.getStopsMap().get(0).getCoordinate().getY();
-
-                    Coordinate begin_street_1 = s.getCoordinates().get(0);
-                    Coordinate begin_street_2 = s.getCoordinates().get(2);
-
-                    Coordinate second_street_1 = t.getStreetsMap().get(1).getCoordinates().get(0);
-                    Coordinate second_street_2 = t.getStreetsMap().get(1).getCoordinates().get(2);
-
-                    if (begin_street_1.equals(second_street_1) || begin_street_1.equals(second_street_2)) {
-                        System.out.println("Highlight part of first street from first stop");
-                        line1 = new Line(begin_stop_x, begin_stop_y, begin_street_1.getX(), begin_street_1.getY());
-                        line1.setStroke(t.getTransportLineColor());
-                        line1.setStrokeWidth(5);
-                        root.getChildren().addAll(line1);
-                    } else if (begin_street_2.equals(second_street_1) || begin_street_2.equals(second_street_2)) {
-                        System.out.println("Highlight part of end street from end stop");
-                        line1 = new Line(begin_stop_x, begin_stop_y, begin_street_2.getX(), begin_street_2.getY());
-                        line1.setStroke(t.getTransportLineColor());
-                        line1.setStrokeWidth(5);
-                        root.getChildren().addAll(line1);
-                    }
-                } else if (t.getStreetsMap().get(t.getStreetsMap().size() - 1).equals(s)) // end street of line
-                {
-                    int end_stop_x = t.getStopsMap().get(t.getStopsMap().size() - 1).getCoordinate().getX();
-                    int end_stop_y = t.getStopsMap().get(t.getStopsMap().size() - 1).getCoordinate().getY();
-
-                    Coordinate end_street_1 = s.getCoordinates().get(0);
-                    Coordinate end_street_2 = s.getCoordinates().get(2);
-
-                    Coordinate nexttolast_street_1 = t.getStreetsMap().get(t.getStreetsMap().size() - 2).getCoordinates().get(0);
-                    Coordinate nexttolast_street_2 = t.getStreetsMap().get(t.getStreetsMap().size() - 2).getCoordinates().get(2);
-
-                    if (end_street_1.equals(nexttolast_street_1) || end_street_1.equals(nexttolast_street_2)) {
-                        System.out.println("Highlight last street from stop1");
-                        line1 = new Line(end_stop_x, end_stop_y, end_street_1.getX(), end_street_1.getY());
-                        line1.setStroke(t.getTransportLineColor());
-                        line1.setStrokeWidth(5);
-                        root.getChildren().addAll(line1);
-                    } else if (end_street_2.equals(nexttolast_street_1) || end_street_2.equals(nexttolast_street_2)) {
-                        System.out.println("Highlight last street from stop1");
-                        line1 = new Line(end_stop_x, end_stop_y, end_street_2.getX(), end_street_2.getY());
-                        line1.setStroke(t.getTransportLineColor());
-                        line1.setStrokeWidth(5);
-                        root.getChildren().addAll(line1);
-                    }
-                } else if (t.getStreetsMap().contains(s)) { // highlight whole street from line
-                    if (s.getCoordinates().get(1) != null) {
-                        line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY());
-                        line2 = new Line(s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
-                        line1.setStroke(t.getTransportLineColor());
-                        line1.setStrokeWidth(5);
-                        line2.setStroke(t.getTransportLineColor());
-                        line2.setStrokeWidth(5);
-                        all_streets_lines.add(line1);
-                        root.getChildren().addAll(line1, line2);
-                    } else {
-                        line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
-                        line1.setStroke(t.getTransportLineColor());
-                        line1.setStrokeWidth(5);
-                        all_streets_lines.add(line1);
-                        root.getChildren().addAll(line1);
-                    }
-                }
-            }
+            t.highlightTransportLine(anchor_pane_map, streets_list, all_streets_lines);
         }
 
         //ArrayList<Circle> all_line_original_vehicles = new ArrayList<Circle>();
@@ -259,7 +181,7 @@ public class MainWindow extends Application {
             t.setLineMovement(timeline); // set movement of specified line
             timeline.play(); // play final animation
 
-            root.getChildren().add(vehicle);
+            anchor_pane_map.getChildren().add(vehicle);
         }
 
         /*
@@ -330,7 +252,7 @@ public class MainWindow extends Application {
                                 t.getLineMovement().stop(); // stop old animation of particular TransportLine
                                 //root.getChildren().remove(t.getLineVehicles().get(0));
 
-                                root.getChildren().remove(t.getLineVehicle());
+                                anchor_pane_map.getChildren().remove(t.getLineVehicle());
                                 t.clearLineVehicle();
                                 // set new vehicle for specified line
                                 Circle vehicle_changed = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
@@ -338,7 +260,7 @@ public class MainWindow extends Application {
                                 vehicle_changed.setFill(Color.BLACK);
                                 vehicle_changed.setStrokeWidth(5);
                                 t.setVehicle(vehicle_changed); // set new vehicle for particular TransportLine
-                                root.getChildren().addAll(vehicle_changed);
+                                anchor_pane_map.getChildren().addAll(vehicle_changed);
 
                                 l.setStroke(Color.BLACK); // mark affected slower street with black color
 
