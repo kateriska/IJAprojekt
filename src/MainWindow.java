@@ -104,13 +104,17 @@ public class MainWindow extends Application {
             root.getChildren().addAll(circle, text);
         }
 
+        // create ScheduleLine objects from files
         TransportLine transportLine = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule.txt");
         TransportLine transportLine2 = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule2.txt");
         TransportLine transportLine3 = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule3.txt");
+
         transportLine.setTransportLineColor(Color.SKYBLUE);
         transportLine2.setTransportLineColor(Color.SANDYBROWN);
         transportLine3.setTransportLineColor(Color.PINK);
+
         ArrayList<TransportLine> all_transport_lines_list = new ArrayList<TransportLine>();
+        // create list of all TransportLine objects
         all_transport_lines_list.add(transportLine);
         all_transport_lines_list.add(transportLine2);
         all_transport_lines_list.add(transportLine3);
@@ -135,7 +139,7 @@ public class MainWindow extends Application {
          */
         for (TransportLine t : all_transport_lines_list) {
             for (Street s : streets_list) {
-                if (t.getStreetsMap().get(0).equals(s)) // first street of line
+                if (t.getStreetsMap().get(0).equals(s)) // highlight first street of line
                 {
                     int begin_stop_x = t.getStopsMap().get(0).getCoordinate().getX();
                     int begin_stop_y = t.getStopsMap().get(0).getCoordinate().getY();
@@ -183,7 +187,7 @@ public class MainWindow extends Application {
                         line1.setStrokeWidth(5);
                         root.getChildren().addAll(line1);
                     }
-                } else if (t.getStreetsMap().contains(s)) {
+                } else if (t.getStreetsMap().contains(s)) { // highlight whole street from line
                     if (s.getCoordinates().get(1) != null) {
                         line1 = new Line(s.getCoordinates().get(0).getX(), s.getCoordinates().get(0).getY(), s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY());
                         line2 = new Line(s.getCoordinates().get(1).getX(), s.getCoordinates().get(1).getY(), s.getCoordinates().get(2).getX(), s.getCoordinates().get(2).getY());
@@ -205,6 +209,9 @@ public class MainWindow extends Application {
         }
 
         ArrayList<Circle> all_line_original_vehicles = new ArrayList<Circle>();
+        /*
+        create a vehicle (circle) for every TransportLine object and move along the path of TransportLine
+         */
         for (TransportLine t : all_transport_lines_list) {
             // coordinates of path for vehicle on transportline
             ArrayList<Coordinate> line_coordinates = t.transportLinePath();
@@ -222,8 +229,8 @@ public class MainWindow extends Application {
             Timeline timeline = new Timeline();
 
             // add all keyframes to timeline - one keyframe means path from one coordinate to another coordinate
+            // vehicle waits in stop for 1 seconds and go to another coordinate for 2 seconds
             int delta_time = 0;
-            //int next_position_index = 0;
             KeyFrame waiting_in_stop = null;
             for (int i = 0; i < line_coordinates.size() - 1; i++) {
                 for (Stop s : line_stops) {
@@ -249,13 +256,6 @@ public class MainWindow extends Application {
                 delta_time = delta_time + 2;
             }
 
-            timeline.setOnFinished(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    System.out.println("Location after relocation = " + vehicle.centerXProperty()
-                            + "," + vehicle.centerYProperty() + ")");
-                }
-            });
             timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetations
             t.setLineMovement(timeline); // set movement of specified line
             timeline.play(); // play final animation
@@ -267,12 +267,12 @@ public class MainWindow extends Application {
         after clicking on original vehicle of line show some info on console
         TASK - Show this info about vehicle in some textbox under the map
          */
+        // create an event after mouse click if the vehicle of line is clicked
         for (TransportLine t : all_transport_lines_list) {
-            System.out.println(t.getLineVehicle());
-                //Circle vehicle = t.getLineVehicle();
-                t.getLineVehicle().setOnMouseClicked(new EventHandler<MouseEvent>() {
+                t.getLineVehicle().setOnMouseClicked(new EventHandler<MouseEvent>() { // create an event after mouse click
                             @Override
                             public void handle(MouseEvent event) {
+                                // change color of clicked vehicle
                                 if (t.getLineVehicle().getFill() == t.getTransportLineColor()) {
                                     t.getLineVehicle().setFill(Color.LIGHTGREEN);
                                 }
@@ -282,11 +282,13 @@ public class MainWindow extends Application {
 
                                 System.out.println("This is line number " + t.getLineId() + " with route " + t.printRoute());
 
+                                // get actual coordinates of vehicle
                                 int vehicle_actual_x = (int) Math.round(t.getLineVehicle().getCenterX());
                                 int vehicle_actual_y = (int) Math.round(t.getLineVehicle().getCenterY());
 
                                 Coordinate vehicle_actual_coordinates = new Coordinate(vehicle_actual_x, vehicle_actual_y);
 
+                                // print next stop and previous stops of line
                                 for (int i = 0; i < t.transportLinePath().size() - 1; i++) {
                                     Coordinate coordinates1 = t.transportLinePath().get(i);
                                     Coordinate coordinates2 = t.transportLinePath().get(i + 1);
@@ -296,7 +298,7 @@ public class MainWindow extends Application {
                                         System.out.println("Previous stops:");
                                         for (int j = 0; j < t.transportLinePathIDs().size(); j++) {
                                             if (j < t.transportLinePathIDs().indexOf(id_coordinates_2) && t.transportLinePathIDs().get(j).contains("Stop")) {
-                                                //System.out.println(t.transportLinePathIDs().get(j));
+                                                System.out.println(t.transportLinePathIDs().get(j));
                                             } else {
                                                 if (t.transportLinePathIDs().get(j).contains("Stop")) {
                                                     System.out.println("Next stop is " + t.transportLinePathIDs().get(j));
@@ -318,13 +320,13 @@ public class MainWindow extends Application {
          */
         for (Line l : all_streets_lines)
         {
-            l.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            l.setOnMouseClicked(new EventHandler<MouseEvent>() { // if mouse clicked on some Street object
                 @Override
                 public void handle(MouseEvent event) {
                     for (TransportLine t : all_transport_lines_list) {
                         Timeline timeline_changed = t.getLineMovement();
-                        //System.out.println(timeline_changed);
-                        for (Street s : t.getStreetsMap()) {
+                        for (Street s : t.getStreetsMap()) // if Street is in some TransportLine
+                        {
                             if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY()) {
                                 System.out.println("Street is slower now from line");
                                 t.getLineMovement().stop();
@@ -332,6 +334,7 @@ public class MainWindow extends Application {
 
                                 root.getChildren().remove(t.getLineVehicle());
                                 t.clearLineVehicle();
+                                // set new vehicle for specified line
                                 Circle vehicle_changed = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
                                 vehicle_changed.setStroke(Color.AZURE);
                                 vehicle_changed.setFill(Color.BLACK);
@@ -341,7 +344,7 @@ public class MainWindow extends Application {
 
                                 l.setStroke(Color.BLACK);
 
-                                ArrayList<Integer> affected_points_indexes = new ArrayList<Integer>();
+                                ArrayList<Integer> affected_points_indexes = new ArrayList<Integer>(); // get which points of path are affected with slowing the traffic
                                 for (int i = 0; i < t.transportLinePath().size(); i++) {
                                     if (t.transportLinePath().get(i).isBetweenTwoCoordinates(s.begin(), s.end()) || (t.transportLinePath().get(i).getX() == s.begin().getX() && t.transportLinePath().get(i).getY() == s.begin().getY()) || (t.transportLinePath().get(i).getX() == s.end().getX() && t.transportLinePath().get(i).getY() == s.end().getY())) {
                                         System.out.println("Affected points: " + t.transportLinePath().get(i).getX() + ", " + t.transportLinePath().get(i).getY());
@@ -349,6 +352,11 @@ public class MainWindow extends Application {
                                         affected_points_indexes.add(i);
                                     }
                                 }
+
+                                /*
+                                simulation of slowing traffic and set 8 seconds as duration of movement along to next coordinate and 2 seconds for waiting in stop - this duration can user set
+                                streets without traffic slowing has the same duration
+                                 */
 
                                 int delta_time = 0;
                                 KeyFrame waiting_in_stop = null;
@@ -429,7 +437,7 @@ public class MainWindow extends Application {
                             }
                         }
                         timeline_changed.setCycleCount(Animation.INDEFINITE);
-                        timeline_changed.play();
+                        timeline_changed.play(); // play animation
                         t.setLineMovement(timeline_changed);
                         //System.out.println(timeline_changed);
                     }
@@ -596,18 +604,5 @@ public class MainWindow extends Application {
         transport_line.printRoute();
 
         return transport_line;
-    }
-
-    // only simulation of new path of line after closing specified street, firstly GUI and controlers for it needs to be done
-    public void closeStreet(ArrayList<Street> streetArrayList)
-    {
-        for (Street s : streetArrayList)
-        {
-            if (s.getId().equals("Street4"))
-            {
-                Street closed_street = s;
-            }
-        }
-
     }
 }
