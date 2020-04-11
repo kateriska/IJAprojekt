@@ -18,7 +18,6 @@ import javafx.scene.input.*;
 import java.awt.MouseInfo;
 import javafx.event.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import javafx.scene.shape.Circle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
@@ -26,7 +25,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import javafx.scene.paint.Paint;
 
 public class MainWindow extends Application {
 
@@ -65,7 +63,7 @@ public class MainWindow extends Application {
         });
         */
 
-        streets_list = setMapStreets();
+        streets_list = setMapStreets(); // Street objects created from file
 
         /*
         highlight all street objects in map - streets with two coordinates with yellow and
@@ -92,7 +90,7 @@ public class MainWindow extends Application {
             }
         }
 
-        stops_list = setMapStops(streets_list);
+        stops_list = setMapStops(streets_list); // objects of all Stop are created from file
 
         for (Stop stop : stops_list) //  highlight all stop objects in map
         {
@@ -109,6 +107,7 @@ public class MainWindow extends Application {
         TransportLine transportLine2 = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule2.txt");
         TransportLine transportLine3 = setScheduleLines(streets_list, stops_list, "C:/Users/forto/IdeaProjects/proj/lib/transportSchedule3.txt");
 
+        // each line is marked with different color
         transportLine.setTransportLineColor(Color.SKYBLUE);
         transportLine2.setTransportLineColor(Color.SANDYBROWN);
         transportLine3.setTransportLineColor(Color.PINK);
@@ -118,7 +117,7 @@ public class MainWindow extends Application {
         all_transport_lines_list.add(transportLine);
         all_transport_lines_list.add(transportLine2);
         all_transport_lines_list.add(transportLine3);
-        for (Stop stop : stops_list) // highlight stop object from transport lines with pink color
+        for (Stop stop : stops_list) // highlight stop object from transport lines with their own color
         {
             for (TransportLine t : all_transport_lines_list) {
                 if (t.getStopsMap().contains(stop)) {
@@ -132,7 +131,7 @@ public class MainWindow extends Application {
         }
 
         /*
-        highlight the journey of lines with pink color -
+        highlight the journey of lines with their own color -
         it means highlight all street from beginning to end when the line is travel through all street
         and highlight only part from stop to end coordinate of street for beginning and end street, because
         the line is not travel through all street but only part of it
@@ -208,7 +207,7 @@ public class MainWindow extends Application {
             }
         }
 
-        ArrayList<Circle> all_line_original_vehicles = new ArrayList<Circle>();
+        //ArrayList<Circle> all_line_original_vehicles = new ArrayList<Circle>();
         /*
         create a vehicle (circle) for every TransportLine object and move along the path of TransportLine
          */
@@ -256,7 +255,7 @@ public class MainWindow extends Application {
                 delta_time = delta_time + 2;
             }
 
-            timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetations
+            timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetition
             t.setLineMovement(timeline); // set movement of specified line
             timeline.play(); // play final animation
 
@@ -312,7 +311,6 @@ public class MainWindow extends Application {
                             }
                         }
                 );
-
         }
 
         /*
@@ -329,7 +327,7 @@ public class MainWindow extends Application {
                         {
                             if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY()) {
                                 System.out.println("Street is slower now from line");
-                                t.getLineMovement().stop();
+                                t.getLineMovement().stop(); // stop old animation of particular TransportLine
                                 //root.getChildren().remove(t.getLineVehicles().get(0));
 
                                 root.getChildren().remove(t.getLineVehicle());
@@ -339,27 +337,28 @@ public class MainWindow extends Application {
                                 vehicle_changed.setStroke(Color.AZURE);
                                 vehicle_changed.setFill(Color.BLACK);
                                 vehicle_changed.setStrokeWidth(5);
-                                t.setVehicle(vehicle_changed);
+                                t.setVehicle(vehicle_changed); // set new vehicle for particular TransportLine
                                 root.getChildren().addAll(vehicle_changed);
 
-                                l.setStroke(Color.BLACK);
+                                l.setStroke(Color.BLACK); // mark affected slower street with black color
 
                                 ArrayList<Integer> affected_points_indexes = new ArrayList<Integer>(); // get which points of path are affected with slowing the traffic
                                 for (int i = 0; i < t.transportLinePath().size(); i++) {
                                     if (t.transportLinePath().get(i).isBetweenTwoCoordinates(s.begin(), s.end()) || (t.transportLinePath().get(i).getX() == s.begin().getX() && t.transportLinePath().get(i).getY() == s.begin().getY()) || (t.transportLinePath().get(i).getX() == s.end().getX() && t.transportLinePath().get(i).getY() == s.end().getY())) {
                                         System.out.println("Affected points: " + t.transportLinePath().get(i).getX() + ", " + t.transportLinePath().get(i).getY());
-                                        //System.out.println(i);
                                         affected_points_indexes.add(i);
                                     }
                                 }
 
                                 /*
                                 simulation of slowing traffic and set 8 seconds as duration of movement along to next coordinate and 2 seconds for waiting in stop - this duration can user set
-                                streets without traffic slowing has the same duration
+                                streets without traffic slowing has the same duration (1 second waiting in stop, 2 seconds duration between coordinates)
                                  */
 
                                 int delta_time = 0;
                                 KeyFrame waiting_in_stop = null;
+
+                                // path from beginning to beginning of affected street - normal duration
                                 for (int i = 0; i < affected_points_indexes.get(0); i++) {
                                     for (Stop stop : t.getStopsMap()) {
                                         if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
@@ -385,6 +384,7 @@ public class MainWindow extends Application {
                                     delta_time = delta_time + 2;
                                 }
 
+                                // path around affected street - slower duration
                                 for (int i = affected_points_indexes.get(0); i < affected_points_indexes.get(affected_points_indexes.size() - 1); i++) {
                                     for (Stop stop : t.getStopsMap()) {
                                         if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
@@ -410,6 +410,7 @@ public class MainWindow extends Application {
                                     delta_time = delta_time + 8;
                                 }
 
+                                // path of the rest of TransportLine to their end stop - normal duration
                                 for (int i = affected_points_indexes.get(affected_points_indexes.size() - 1); i < t.transportLinePath().size() - 1; i++) {
                                     for (Stop stop : t.getStopsMap()) {
                                         if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
