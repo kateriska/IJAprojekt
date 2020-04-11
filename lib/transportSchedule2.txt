@@ -5,11 +5,9 @@ Stop10
 Street16
 Stop1
 Street10
-Stop4
 Stop5
 Street5
 Stop19
 Stop13
 Stop9
 Stop15
-Stop12
