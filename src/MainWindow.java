@@ -26,6 +26,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Label;
 
 public class MainWindow extends Application {
 
@@ -37,18 +38,27 @@ public class MainWindow extends Application {
     public void start(Stage stage) throws Exception {
         // TASK - add sliding along map and zoom of map and other controllers of GUI
         BorderPane root = new BorderPane(); // create BorderPane as root element
-        ScrollPane scroll_pane_map = new ScrollPane();
-        AnchorPane anchor_pane_menu = new AnchorPane();
+        ScrollPane scroll_pane_map = new ScrollPane(); // create scroll pane for map
+        AnchorPane anchor_pane_menu = new AnchorPane(); // create anchor pane for side menu
+        ScrollPane scroll_pane_downbox = new ScrollPane(); // create down box for info about lines
 
         // put two components to BorderPane - scroll_pane_map for window with map and anchor_pane_menu for menu
         root.setLeft(scroll_pane_map);
         root.setRight(anchor_pane_menu);
+        root.setBottom(scroll_pane_downbox);
+
+        scroll_pane_downbox.setPrefWidth(400);
+        scroll_pane_downbox.setPrefHeight(150);
+
+        // create text field in scroll_pane_downbox for info about lines
+        Text lines_info = new Text();
+        scroll_pane_downbox.setContent(lines_info);
 
         AnchorPane anchor_pane_map = new AnchorPane(); // set anchor pane in scroll_pane_map
         scroll_pane_map.setContent(anchor_pane_map);
         anchor_pane_map.setPrefWidth(500);
         anchor_pane_map.setPrefHeight(500);
-        scroll_pane_map.setPannable(true);
+        scroll_pane_map.setPannable(true); // pannable map
         scroll_pane_map.setPrefViewportWidth(500);
         scroll_pane_map.setPrefViewportHeight(500);
 
@@ -219,7 +229,9 @@ public class MainWindow extends Application {
                                     t.getLineVehicle().setFill(t.getTransportLineColor());
                                 }
 
-                                System.out.println("This is line number " + t.getLineId() + " with route " + t.printRoute());
+                                System.out.println("This is line number " + t.getLineId() + " with route " + t.printRoute() );
+                                lines_info.setText("This is line number " + t.getLineId() + "\n");
+                                lines_info.setText(lines_info.getText() + "Route: " + t.printRoute() + "\n");
 
                                 // get actual coordinates of vehicle
                                 int vehicle_actual_x = (int) Math.round(t.getLineVehicle().getCenterX());
@@ -235,12 +247,15 @@ public class MainWindow extends Application {
 
                                     if (vehicle_actual_coordinates.isBetweenTwoCoordinates(coordinates1, coordinates2) == true) {
                                         System.out.println("Previous stops:");
+                                        lines_info.setText(lines_info.getText() + "Previous stops:" + "\n");
                                         for (int j = 0; j < t.transportLinePathIDs().size(); j++) {
                                             if (j < t.transportLinePathIDs().indexOf(id_coordinates_2) && t.transportLinePathIDs().get(j).contains("Stop")) {
                                                 System.out.println(t.transportLinePathIDs().get(j));
+                                                lines_info.setText(lines_info.getText() + t.transportLinePathIDs().get(j) + "\n");
                                             } else {
                                                 if (t.transportLinePathIDs().get(j).contains("Stop")) {
                                                     System.out.println("Next stop is " + t.transportLinePathIDs().get(j));
+                                                    lines_info.setText(lines_info.getText() + "Next stop is " + t.transportLinePathIDs().get(j) + "\n");
                                                     break;
                                                 }
                                             }
