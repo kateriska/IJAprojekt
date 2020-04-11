@@ -81,6 +81,7 @@ public class Coordinate {
         }
     }
 
+    // check whether coordinate is in array
     public boolean isInArray(ArrayList<Coordinate> affected_points)
     {
         for (Coordinate c : affected_points)
