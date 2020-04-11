@@ -161,8 +161,9 @@ public class MainWindow extends Application {
         /*
         create a vehicle (circle) for every TransportLine object and move along the path of TransportLine
          */
+        ArrayList<Coordinate> affected_points = new ArrayList<Coordinate>();
         for (TransportLine t : all_transport_lines_list) {
-            t.createOriginalAnimation(anchor_pane_map, 2,1);
+            t.createLineAnimation(anchor_pane_map, 2,1, affected_points, 0, 0);
         }
 
         /*
@@ -230,7 +231,6 @@ public class MainWindow extends Application {
                 @Override
                 public void handle(MouseEvent event) {
                     for (TransportLine t : all_transport_lines_list) {
-                        Timeline timeline_changed = t.getLineMovement();
                         for (Street s : t.getStreetsMap()) // if Street is in some TransportLine
                         {
                             if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY()) {
@@ -240,115 +240,23 @@ public class MainWindow extends Application {
 
                                 anchor_pane_map.getChildren().remove(t.getLineVehicle());
                                 t.clearLineVehicle();
-                                // set new vehicle for specified line
-                                Circle vehicle_changed = new Circle(t.getStopsMap().get(0).getCoordinate().getX(), t.getStopsMap().get(0).getCoordinate().getY(), 10);
-                                vehicle_changed.setStroke(Color.AZURE);
-                                vehicle_changed.setFill(Color.BLACK);
-                                vehicle_changed.setStrokeWidth(5);
-                                t.setVehicle(vehicle_changed); // set new vehicle for particular TransportLine
-                                anchor_pane_map.getChildren().addAll(vehicle_changed);
 
                                 l.setStroke(Color.BLACK); // mark affected slower street with black color
 
                                 ArrayList<Integer> affected_points_indexes = new ArrayList<Integer>(); // get which points of path are affected with slowing the traffic
+                                ArrayList<Coordinate> affected_points = new ArrayList<Coordinate>();
                                 for (int i = 0; i < t.transportLinePath().size(); i++) {
                                     if (t.transportLinePath().get(i).isBetweenTwoCoordinates(s.begin(), s.end()) || (t.transportLinePath().get(i).getX() == s.begin().getX() && t.transportLinePath().get(i).getY() == s.begin().getY()) || (t.transportLinePath().get(i).getX() == s.end().getX() && t.transportLinePath().get(i).getY() == s.end().getY())) {
                                         System.out.println("Affected points: " + t.transportLinePath().get(i).getX() + ", " + t.transportLinePath().get(i).getY());
                                         affected_points_indexes.add(i);
+                                        affected_points.add(t.transportLinePath().get(i));
                                     }
                                 }
 
-                                /*
-                                simulation of slowing traffic and set 8 seconds as duration of movement along to next coordinate and 2 seconds for waiting in stop - this duration can user set
-                                streets without traffic slowing has the same duration (1 second waiting in stop, 2 seconds duration between coordinates)
-                                 */
-
-                                int delta_time = 0;
-                                KeyFrame waiting_in_stop = null;
-
-                                // path from beginning to beginning of affected street - normal duration
-                                for (int i = 0; i < affected_points_indexes.get(0); i++) {
-                                    for (Stop stop : t.getStopsMap()) {
-                                        if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
-                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 1), // this means waiting in stop for some time
-                                                    new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i).getX()),
-                                                    new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i).getY()));
-
-                                            delta_time = delta_time + 1;
-                                            break;
-                                        }
-                                    }
-
-                                    KeyFrame end = new KeyFrame(Duration.seconds(delta_time + 2), // this means that the path from one coordinate to another lasts 2 seconds
-                                            new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i + 1).getX()),
-                                            new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i + 1).getY()));
-
-                                    if (waiting_in_stop != null) {
-                                        timeline_changed.getKeyFrames().addAll(end, waiting_in_stop);
-                                    } else {
-                                        timeline_changed.getKeyFrames().addAll(end);
-                                    }
-
-                                    delta_time = delta_time + 2;
-                                }
-
-                                // path around affected street - slower duration
-                                for (int i = affected_points_indexes.get(0); i < affected_points_indexes.get(affected_points_indexes.size() - 1); i++) {
-                                    for (Stop stop : t.getStopsMap()) {
-                                        if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
-                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 2), // this means waiting in stop for some time
-                                                    new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i).getX()),
-                                                    new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i).getY()));
-
-                                            delta_time = delta_time + 2;
-                                            break;
-                                        }
-                                    }
-
-                                    KeyFrame end = new KeyFrame(Duration.seconds(delta_time + 8), // this means that the path from one coordinate to another lasts 2 seconds
-                                            new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i + 1).getX()),
-                                            new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i + 1).getY()));
-
-                                    if (waiting_in_stop != null) {
-                                        timeline_changed.getKeyFrames().addAll(end, waiting_in_stop);
-                                    } else {
-                                        timeline_changed.getKeyFrames().addAll(end);
-                                    }
-
-                                    delta_time = delta_time + 8;
-                                }
-
-                                // path of the rest of TransportLine to their end stop - normal duration
-                                for (int i = affected_points_indexes.get(affected_points_indexes.size() - 1); i < t.transportLinePath().size() - 1; i++) {
-                                    for (Stop stop : t.getStopsMap()) {
-                                        if (t.transportLinePath().get(i).getX() == stop.getCoordinate().getX() && t.transportLinePath().get(i).getY() == stop.getCoordinate().getY()) {
-                                            waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + 1), // this means waiting in stop for some time
-                                                    new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i).getX()),
-                                                    new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i).getY()));
-
-                                            delta_time = delta_time + 1;
-
-                                            break;
-                                        }
-                                    }
-
-                                    KeyFrame end = new KeyFrame(Duration.seconds(delta_time + 2), // this means that the path from one coordinate to another lasts 2 seconds
-                                            new KeyValue(vehicle_changed.centerXProperty(), t.transportLinePath().get(i + 1).getX()),
-                                            new KeyValue(vehicle_changed.centerYProperty(), t.transportLinePath().get(i + 1).getY()));
-
-                                    if (waiting_in_stop != null) {
-                                        timeline_changed.getKeyFrames().addAll(end, waiting_in_stop);
-                                    } else {
-                                        timeline_changed.getKeyFrames().addAll(end);
-                                    }
-                                    delta_time = delta_time + 2;
-                                }
+                                // create animation with traffic on particular street 
+                                t.createLineAnimation(anchor_pane_map, 2, 1, affected_points, 8, 2);
                             }
                         }
-                        timeline_changed.setCycleCount(Animation.INDEFINITE);
-                        timeline_changed.play(); // play animation
-                        t.setLineMovement(timeline_changed);
-                        //System.out.println(timeline_changed);
                     }
                 }
             }
