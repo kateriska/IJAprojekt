@@ -360,10 +360,13 @@ public class TransportLine {
         }
     }
 
-    // create animation of original path without slowing traffic for particular street
+    // create animation of path for particular transportline
     // duration - duration between neighbour coordinates - default 2 seconds
     // stop_duration - duration of waiting in stop - default 1 second
-    public void createOriginalAnimation(AnchorPane anchor_pane_map, int duration, int stop_duration)
+    // affected_points - array of points affected with slowing traffic
+    // slow_duration - duration between neighbour coordinates in street affected with slow traffic
+    // slow_stop_duration - duration of waiting in stop in street affected with slow traffic
+    public void createLineAnimation(AnchorPane anchor_pane_map, int duration, int stop_duration, ArrayList<Coordinate> affected_points, int slow_duration, int slow_stop_duration)
     {
         // coordinates of path for vehicle on transportline
         ArrayList<Coordinate> line_coordinates = this.transportLinePath();
@@ -371,7 +374,7 @@ public class TransportLine {
         ArrayList<String> line_coordinates_ids = this.transportLinePathIDs();
         // all stops for transportline
         List<Stop> line_stops = this.getStopsMap();
-        // create original vehicle for line
+        // create vehicle for line (circle)
         Circle vehicle = new Circle(this.getStopsMap().get(0).getCoordinate().getX(), this.getStopsMap().get(0).getCoordinate().getY(), 10);
         vehicle.setStroke(Color.AZURE);
         vehicle.setFill(this.getTransportLineColor());
@@ -379,13 +382,30 @@ public class TransportLine {
         this.setVehicle(vehicle);
 
         Timeline timeline = new Timeline();
+        int original_duration = duration;
+        int original_stop_duration = stop_duration;
 
         // add all keyframes to timeline - one keyframe means path from one coordinate to another coordinate
-        // vehicle waits in stop for 1 seconds and go to another coordinate for 2 seconds
+        // vehicle waits in stop for 1 seconds and go to another coordinate for 2 seconds (in default mode)
         int delta_time = 0;
         KeyFrame waiting_in_stop = null;
         for (int i = 0; i < line_coordinates.size() - 1; i++) {
+            // if we go through street affected by slow traffic
+            if (line_coordinates.get(i).isInArray(affected_points) && line_coordinates.get(i+1).isInArray(affected_points))
+            {
+                // duration between coordinates and duration of waiting in stop is different
+                duration = slow_duration;
+                stop_duration = slow_stop_duration;
+            }
+            else
+            {
+                // else use default duration
+                duration = original_duration;
+                stop_duration = original_stop_duration;
+            }
+
             for (Stop s : line_stops) {
+                // if we are in stop, we wait 'stop_duration' time
                 if (line_coordinates.get(i).getX() == s.getCoordinate().getX() && line_coordinates.get(i).getY() == s.getCoordinate().getY()) {
                     waiting_in_stop = new KeyFrame(Duration.seconds(delta_time + stop_duration), // this means waiting in stop for some time
                             new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i).getX()),
@@ -395,6 +415,7 @@ public class TransportLine {
                     break;
                 }
             }
+            // we travelled for 'duration' time
             KeyFrame end = new KeyFrame(Duration.seconds(delta_time + duration), // this means that the path from one coordinate to another lasts 2 seconds
                     new KeyValue(vehicle.centerXProperty(), line_coordinates.get(i + 1).getX()),
                     new KeyValue(vehicle.centerYProperty(), line_coordinates.get(i + 1).getY()));
@@ -408,7 +429,7 @@ public class TransportLine {
             delta_time = delta_time + duration;
         }
 
-        timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetition
+        //timeline.setCycleCount(Timeline.INDEFINITE); // infinity number of repetitions
         this.setLineMovement(timeline); // set movement of specified line
         timeline.play(); // play final animation
 

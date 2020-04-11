@@ -1,5 +1,7 @@
 package maps;
 
+import java.util.ArrayList;
+
 public class Coordinate {
 
     private int x;
@@ -77,9 +79,19 @@ public class Coordinate {
         {
             return false;
         }
+    }
 
+    public boolean isInArray(ArrayList<Coordinate> affected_points)
+    {
+        for (Coordinate c : affected_points)
+        {
+            if (c.getX() == this.getX() && c.getY() == this.getY())
+            {
+                return true;
+            }
+        }
 
-
+        return false;
     }
 
 
