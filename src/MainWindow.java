@@ -51,6 +51,24 @@ public class MainWindow extends Application {
         scroll_pane_map.setPannable(true);
         scroll_pane_map.setPrefViewportWidth(500);
         scroll_pane_map.setPrefViewportHeight(500);
+
+        // zoom map
+        anchor_pane_map.setOnScroll(
+                new EventHandler<ScrollEvent>() {
+                    @Override
+                    public void handle(ScrollEvent event) {
+                        double zoomFactor = 1.05;
+                        double deltaY = event.getDeltaY();
+
+                        if (deltaY < 0){
+                            zoomFactor = 0.95;
+                        }
+                        anchor_pane_map.setScaleX(anchor_pane_map.getScaleX() * zoomFactor);
+                        anchor_pane_map.setScaleY(anchor_pane_map.getScaleY() * zoomFactor);
+                        event.consume();
+                    }
+                });
+
         Scene scene = new Scene(root, 800, 700); // set width and height of window
 
         File file = new File("C:/Users/forto/IdeaProjects/proj/lib/map.png");
