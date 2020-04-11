@@ -2,6 +2,11 @@ package maps;
 
 import java.util.*;
 
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.paint.Paint;
+
 public class Street {
     private String street_id;
     private Coordinate coordinate1;
@@ -179,6 +184,31 @@ public class Street {
 
         }
 
+    }
+
+    /*
+     highlight street in map, for right angle street need to create two lines instead one for this type of streets
+     */
+    public void highlightStreet(AnchorPane anchor_pane_map, ArrayList<Line> all_streets_lines, Paint color )
+    {
+        Line line1 = null;
+        Line line2 = null;
+        if (this.getCoordinates().get(1) != null) {
+            line1 = new Line(this.getCoordinates().get(0).getX(), this.getCoordinates().get(0).getY(), this.getCoordinates().get(1).getX(), this.getCoordinates().get(1).getY());
+            line2 = new Line(this.getCoordinates().get(1).getX(), this.getCoordinates().get(1).getY(), this.getCoordinates().get(2).getX(), this.getCoordinates().get(2).getY());
+            line1.setStroke(color);
+            line1.setStrokeWidth(5);
+            line2.setStroke(color);
+            line2.setStrokeWidth(5);
+            all_streets_lines.add(line1);
+            anchor_pane_map.getChildren().addAll(line1, line2);
+        } else {
+            line1 = new Line(this.getCoordinates().get(0).getX(), this.getCoordinates().get(0).getY(), this.getCoordinates().get(2).getX(), this.getCoordinates().get(2).getY());
+            line1.setStroke(color);
+            line1.setStrokeWidth(5);
+            all_streets_lines.add(line1);
+            anchor_pane_map.getChildren().addAll(line1);
+        }
     }
 
 }

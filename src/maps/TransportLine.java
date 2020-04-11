@@ -1,5 +1,6 @@
 package maps;
 
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javafx.scene.paint.Paint;
 import javafx.animation.Timeline;
+import javafx.scene.shape.Line;
 
 public class TransportLine {
     private String line_id;
@@ -288,6 +290,70 @@ public class TransportLine {
     public Paint getTransportLineColor()
     {
         return line_color;
+    }
+
+    /*
+        highlight the journey of lines with their own color -
+        it means highlight all street from beginning to end when the line is travel through all street
+        and highlight only part from stop to end coordinate of street for beginning and end street, because
+        the line is not travel through all street but only part of it
+    */
+    public void highlightTransportLine(AnchorPane anchor_pane_map, ArrayList<Street> streets_list, ArrayList<Line> all_streets_lines)
+    {
+        Line line1 = null;
+        for (Street s : streets_list) {
+            if (this.getStreetsMap().get(0).equals(s)) // highlight first street of line
+            {
+                int begin_stop_x = this.getStopsMap().get(0).getCoordinate().getX();
+                int begin_stop_y = this.getStopsMap().get(0).getCoordinate().getY();
+
+                Coordinate begin_street_1 = s.getCoordinates().get(0);
+                Coordinate begin_street_2 = s.getCoordinates().get(2);
+
+                Coordinate second_street_1 = this.getStreetsMap().get(1).getCoordinates().get(0);
+                Coordinate second_street_2 = this.getStreetsMap().get(1).getCoordinates().get(2);
+
+                if ((begin_street_1.getX() == second_street_1.getX() && begin_street_1.getY() == second_street_1.getY()) || (begin_street_1.getX() == second_street_2.getX() && begin_street_1.getY() == second_street_2.getY())) {
+                    System.out.println("Highlight part of first street from first stop");
+                    line1 = new Line(begin_stop_x, begin_stop_y, begin_street_1.getX(), begin_street_1.getY());
+                    line1.setStroke(this.getTransportLineColor());
+                    line1.setStrokeWidth(5);
+                    anchor_pane_map.getChildren().addAll(line1);
+                } else if ((begin_street_2.getX() == second_street_1.getX() && begin_street_2.getY() == second_street_1.getY()) || (begin_street_2.getX() == second_street_2.getX() && begin_street_2.getY() == second_street_2.getY())) {
+                    System.out.println("Highlight part of first street from first stop");
+                    line1 = new Line(begin_stop_x, begin_stop_y, begin_street_2.getX(), begin_street_2.getY());
+                    line1.setStroke(this.getTransportLineColor());
+                    line1.setStrokeWidth(5);
+                    anchor_pane_map.getChildren().addAll(line1);
+                }
+            } else if (this.getStreetsMap().get(this.getStreetsMap().size() - 1).equals(s)) // end street of line
+            {
+                int end_stop_x = this.getStopsMap().get(this.getStopsMap().size() - 1).getCoordinate().getX();
+                int end_stop_y = this.getStopsMap().get(this.getStopsMap().size() - 1).getCoordinate().getY();
+
+                Coordinate end_street_1 = s.getCoordinates().get(0);
+                Coordinate end_street_2 = s.getCoordinates().get(2);
+
+                Coordinate nexttolast_street_1 = this.getStreetsMap().get(this.getStreetsMap().size() - 2).getCoordinates().get(0);
+                Coordinate nexttolast_street_2 = this.getStreetsMap().get(this.getStreetsMap().size() - 2).getCoordinates().get(2);
+
+                if ((end_street_1.getX() == nexttolast_street_1.getX() && end_street_1.getY() == nexttolast_street_1.getY()) || (end_street_1.getX() == nexttolast_street_2.getX() && end_street_1.getY() == nexttolast_street_2.getY())) {
+                    System.out.println("Highlight last street from stop1");
+                    line1 = new Line(end_stop_x, end_stop_y, end_street_1.getX(), end_street_1.getY());
+                    line1.setStroke(this.getTransportLineColor());
+                    line1.setStrokeWidth(5);
+                    anchor_pane_map.getChildren().addAll(line1);
+                } else if ((end_street_2.getX() == nexttolast_street_1.getX() && end_street_2.getY() == nexttolast_street_1.getY()) || (end_street_2.getX() == nexttolast_street_2.getX() && end_street_2.getY() == nexttolast_street_2.getY())) {
+                    System.out.println("Highlight last street from stop1");
+                    line1 = new Line(end_stop_x, end_stop_y, end_street_2.getX(), end_street_2.getY());
+                    line1.setStroke(this.getTransportLineColor());
+                    line1.setStrokeWidth(5);
+                    anchor_pane_map.getChildren().addAll(line1);
+                }
+            } else if (this.getStreetsMap().contains(s)) { // highlight whole street from line
+                s.highlightStreet(anchor_pane_map, all_streets_lines, this.getTransportLineColor());
+            }
+        }
     }
 
 

@@ -1,5 +1,13 @@
 package maps;
 
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.scene.paint.Paint;
+
+import java.util.ArrayList;
+
 public class Stop {
     private String id;
     private Coordinate street_coordinates;
@@ -43,5 +51,16 @@ public class Stop {
     public String toString() {
         String stop_conversion = "stop(" + this.getId() + ")";
         return stop_conversion;
+    }
+
+    //  highlight stop object in map
+    public void highlightStop(AnchorPane anchor_pane_map, Paint color)
+    {
+        Circle circle = new Circle(this.getCoordinate().getX(), this.getCoordinate().getY(), 5);
+        circle.setStroke(color);
+        circle.setStrokeWidth(5);
+        Text text = new Text(this.getCoordinate().getX() + 10, this.getCoordinate().getY() - 7, this.getId());
+        text.setStroke(color);
+        anchor_pane_map.getChildren().addAll(circle, text);
     }
 }
