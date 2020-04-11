@@ -14,6 +14,7 @@ public class Coordinate {
     }
 
 
+    // create Coordinate object
     public static Coordinate create(int x, int y)
     {
         if (x < 0 || y < 0) {
@@ -26,12 +27,14 @@ public class Coordinate {
         return coordinates;
     }
 
+    // difference between two x values
     public int diffX(Coordinate c)
     {
         diff_x = this.x - c.x;
         return diff_x;
     }
 
+    // difference between two y values
     public int diffY(Coordinate c)
     {
         diff_y = this.y - c.y;
@@ -56,12 +59,7 @@ public class Coordinate {
         return this.y;
     }
 
-    @Override
-    public int hashCode()
-    {
-        return 1;
-    }
-
+    // check whether some point is between two edge coordinates or not
     public boolean isBetweenTwoCoordinates(Coordinate coordinate1, Coordinate coordinate2) {
 
         double distance1 = Math.sqrt(Math.pow((coordinate1.getX() - this.getX()), 2) + Math.pow((coordinate1.getY() - this.getY()), 2));

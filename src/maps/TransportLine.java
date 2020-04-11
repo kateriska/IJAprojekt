@@ -22,6 +22,7 @@ public class TransportLine {
 
     }
 
+    // set id of this line
     public void setLineId(String line_id)
     {
         this.line_id = line_id;
@@ -31,6 +32,8 @@ public class TransportLine {
     {
         return line_id;
     }
+
+    // add stop to line - important to check whether two streets follows each other or not, street of stop is also added
     public boolean addStop(Stop stop)
     {
         stops_map.add(stop);
@@ -50,18 +53,21 @@ public class TransportLine {
         return true;
     }
 
+    // add Street without Stop to TransportLine
     public boolean addStreet(Street street)
     {
         streets_map.add(street);
         return true;
     }
 
+    // create TransportLine object
     public static TransportLine defaultLine()
     {
         TransportLine new_line = new TransportLine();
         return new_line;
     }
 
+    // simulation of route of TransportLine - stop of street are in brackets, when the street is without any stop of line we set null
     public java.util.List<java.util.AbstractMap.SimpleImmutableEntry<Street,Stop>> getRoute()
     {
         List<java.util.AbstractMap.SimpleImmutableEntry<Street,Stop>> roads_map = new ArrayList<java.util.AbstractMap.SimpleImmutableEntry<Street,Stop>>();
@@ -90,6 +96,8 @@ public class TransportLine {
 
     }
 
+    // prints the route of getRoute()
+    // for example: Street1:stop(Stop13);Street4:stop(Stop17);Street6:stop(Stop5);Street10:null;Street17:stop(Stop1);Street20:stop(Stop2);
     public String printRoute()
     {
         String res = this.getRoute().stream()
@@ -180,7 +188,7 @@ public class TransportLine {
 
 
     /*
-    @ return arraylist of IDs of Coordinates in the order which is specified path of bus, the correct order is important
+    @return arraylist of IDs of Coordinates in the order which is specified path of bus, the correct order is important
      */
     public ArrayList<String> transportLinePathIDs()
     {
@@ -242,6 +250,7 @@ public class TransportLine {
         return line_coordinates_ids;
     }
 
+    // set vehicle of TransportLine (circle)
     public void setVehicle(Circle c)
     {
         vehicle = c;
@@ -259,6 +268,7 @@ public class TransportLine {
         return;
     }
 
+    // set the animation of line movement for TransportLine
     public void setLineMovement(Timeline t)
     {
         timeline = t;
@@ -269,6 +279,7 @@ public class TransportLine {
         return timeline;
     }
 
+    // set color of TransportLine - for their stops, vehicles and streets
     public void setTransportLineColor(Paint p)
     {
         line_color = p;

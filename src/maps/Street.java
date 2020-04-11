@@ -27,11 +27,13 @@ public class Street {
     }
 
 
+    // create Street object for normal streets
     public static Street defaultStreet(String first, Coordinate coordinate1, Coordinate coordinate_end) {
         Street new_street = new Street(first, coordinate1, coordinate_end);
         return new_street;
     }
 
+    // create Street object for right angle streets - important to check whether two lines have 90 degrees (right angle)
     public static Street defaultStreet(String first, Coordinate coordinate1, Coordinate coordinate2, Coordinate coordinate_end) {
         double length1 = Math.sqrt(Math.pow(coordinate2.diffX(coordinate1),2) + Math.pow(coordinate2.diffY(coordinate1),2));
         double length2 = Math.sqrt(Math.pow(coordinate_end.diffX(coordinate1),2) + Math.pow(coordinate_end.diffY(coordinate1),2));
@@ -82,6 +84,7 @@ public class Street {
 
 
 
+    // check whether two streets follow each other
     public boolean follows(Street s) {
         java.util.List<Coordinate> this_street_coordinates = this.getCoordinates();
         java.util.List<Coordinate> s_street_coordinates = s.getCoordinates();
