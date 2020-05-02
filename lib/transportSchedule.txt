@@ -1,7 +1,12 @@
 Line - 1
-Stop13
+Stop15
+Stop3
+Stop16
+Stop8
 Stop17
 Stop5
-Street10
+Stop4
+Stop7
+Stop6
 Stop1
 Stop2
