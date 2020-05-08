@@ -21,7 +21,6 @@ import javafx.stage.Stage;
 import javafx.scene.shape.Line;
 import javafx.scene.input.*;
 import javafx.event.*;
-
 import java.nio.file.Paths;
 import java.util.*;
 import javafx.scene.shape.Circle;
@@ -36,7 +35,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
-import java.nio.file.Paths;
 import java.nio.file.Path;
 
 public class MainWindow extends Application {
@@ -118,15 +116,14 @@ public class MainWindow extends Application {
 
         Scene scene = new Scene(root, 1050, 700); // set width and height of window
 
-        File file = new File(Paths.get("lib/new_map.png").toAbsolutePath().toString());
+        File file = new File(Paths.get("lib/map.png").toAbsolutePath().toString());
         BackgroundImage myBI = new BackgroundImage(new Image(file.toURI().toString()),
                 BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
         anchor_pane_map.setBackground(new Background(myBI)); // set map as background for anchor_pane_map
 
         // beginning of coordinates [0,0] is in left upon corner of whole window and also it is beginning for image
 
-
-        ArrayList<Street> streets_list = setMapStreets(Paths.get("lib/streetsCoordinates.txt").toAbsolutePath()); // Street objects created from file
+        ArrayList<Street> streets_list = setMapStreets(Paths.get("data/streetsCoordinates.txt").toAbsolutePath()); // Street objects created from file
 
         /*
         highlight all street objects in map - for right angle streets need to create two lines instead one for this type of streets
@@ -137,7 +134,7 @@ public class MainWindow extends Application {
             s.highlightStreet(anchor_pane_map,all_streets_lines, Color.LIGHTGREY);
         }
 
-        ArrayList<Stop> stops_list = setMapStops(streets_list, Paths.get("lib/stopsCoordinates.txt").toAbsolutePath()); // objects of all Stop are created from file
+        ArrayList<Stop> stops_list = setMapStops(streets_list, Paths.get("data/stopsCoordinates.txt").toAbsolutePath()); // objects of all Stop are created from file
 
         for (Stop stop : stops_list) //  highlight all stop objects in map
         {
@@ -145,10 +142,10 @@ public class MainWindow extends Application {
         }
 
         // create ScheduleLine objects from files
-        TransportLine transportLine = setScheduleLines(streets_list, stops_list, Paths.get("lib/transportSchedule.txt").toAbsolutePath());
-        TransportLine transportLine2 = setScheduleLines(streets_list, stops_list, Paths.get("lib/transportSchedule2.txt").toAbsolutePath());
-        TransportLine transportLine3 = setScheduleLines(streets_list, stops_list, Paths.get("lib/transportSchedule3.txt").toAbsolutePath());
-        TransportLine transportLine4 = setScheduleLines(streets_list, stops_list, Paths.get("lib/transportSchedule4.txt").toAbsolutePath());
+        TransportLine transportLine = setScheduleLines(streets_list, stops_list, Paths.get("data/transportSchedule.txt").toAbsolutePath());
+        TransportLine transportLine2 = setScheduleLines(streets_list, stops_list, Paths.get("data/transportSchedule2.txt").toAbsolutePath());
+        TransportLine transportLine3 = setScheduleLines(streets_list, stops_list, Paths.get("data/transportSchedule3.txt").toAbsolutePath());
+        TransportLine transportLine4 = setScheduleLines(streets_list, stops_list, Paths.get("data/transportSchedule4.txt").toAbsolutePath());
 
         // each transport line is marked with different color and different color for their highlighting
         transportLine.setTransportLineColor(Color.SKYBLUE);
@@ -168,15 +165,6 @@ public class MainWindow extends Application {
         all_transport_lines_list.add(transportLine3);
         all_transport_lines_list.add(transportLine4);
 
-        for (Stop stop : stops_list) // highlight stop object from transport lines with their own color
-        {
-            for (TransportLine t : all_transport_lines_list) {
-                if (t.getStopsMap().contains(stop)) {
-                    stop.highlightStop(anchor_pane_map, t.getTransportLineColor());
-                }
-            }
-        }
-
         /*
         highlight the journey of lines with their own color -
         it means highlight all street from beginning to end when the line is travel through all street
@@ -186,6 +174,15 @@ public class MainWindow extends Application {
 
         for (TransportLine t : all_transport_lines_list) {
             t.highlightTransportLine(anchor_pane_map, streets_list, all_streets_lines);
+        }
+
+        for (Stop stop : stops_list) // highlight stop object from transport lines with their own color
+        {
+            for (TransportLine t : all_transport_lines_list) {
+                if (t.getStopsMap().contains(stop)) {
+                    stop.highlightStop(anchor_pane_map, t.getTransportLineColor());
+                }
+            }
         }
 
         /*
@@ -247,6 +244,7 @@ public class MainWindow extends Application {
 
         // clicking on Restart timer button
         restart_timer.setOnAction(event -> {
+
             for (TransportLine t : all_transport_lines_list)
             {
                 t.getLineMovement().stop(); // stop all moving vehicles
@@ -255,6 +253,7 @@ public class MainWindow extends Application {
                 if (t.getDetourStreets().size() > 0) { // restart original path when we closed street and did detour previously
                     t.reopenClosedStreet();
                 }
+
                 Timeline timeline = t.createLineAnimation(anchor_pane_map, 2,1, affected_points, 0, 0, handler, false);
                 t.setDelay(2,0,0);
                 timeline.play();
@@ -324,7 +323,7 @@ public class MainWindow extends Application {
             }
             catch (Exception e)
             {
-                // exception when user didnt use unsigned value for traffic size text box
+                // exception when user didn't use unsigned value for traffic size text box
                 Alert alert = new Alert(AlertType.WARNING);
                 alert.setTitle("Bad parameters");
                 alert.setHeaderText("Use unsigned int as values");
@@ -343,18 +342,7 @@ public class MainWindow extends Application {
                     l.setStroke(Color.RED);
                     closed_street_count++;
                 }
-                else
-                {
-                    for (TransportLine t : all_transport_lines_list) {
-                        for (Street s : t.getStreetsMap())
-                        {
-                            if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY())
-                            {
-                                l.setStroke(t.getTransportLineColor());
-                            }
-                        }
-                    }
-                }
+
             }
 
             if (closed_street_count != 1)
@@ -382,18 +370,10 @@ public class MainWindow extends Application {
                 else if (l.getStroke().equals(Color.BLACK)) {
                     detour_lines.add(l);
                     l.setStroke(Color.GREEN);
-                } else {
-                    for (TransportLine t : all_transport_lines_list) {
-                        for (Street s : t.getStreetsMap()) {
-                            if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY()) {
-                                l.setStroke(t.getTransportLineColor());
-                            }
-                        }
-                    }
                 }
             }
 
-            if (closed_line == null) // alert when no street was not closed
+            if (closed_line == null) // alert when no street was closed
             {
                 Alert alert = new Alert(AlertType.WARNING);
                 alert.setTitle("No close street");
@@ -439,11 +419,13 @@ public class MainWindow extends Application {
                         {
                             t.addDetourStreet(detour_street);
                             t.getStreetsMap().add(closed_street_index, detour_street);
-                            t.printRoute();
                             closed_street_index++;
                         }
                     }
                 }
+
+                System.out.println("New path of line with detour:");
+                t.printRoute();
 
                 t.getLineMovement().stop();
 
@@ -647,6 +629,7 @@ public class MainWindow extends Application {
             }
         }
 
+        System.out.println("Line id: " + transport_line.getLineId());
         transport_line.printRoute();
 
         return transport_line;
