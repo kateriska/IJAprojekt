@@ -845,7 +845,7 @@ public class TransportLine {
         for (Street s : this.getStreetsMap()) {
             for (Line l : affected_lines) {
                 if (s.begin().getX() == l.getStartX() && s.begin().getY() == l.getStartY() && s.end().getX() == l.getEndX() && s.end().getY() == l.getEndY()) {
-                    System.out.println("Street is slower now from line");
+                    System.out.println("Street of line is affected with traffic now");
 
                     for (int i = 0; i < this.transportLinePath().size(); i++) {
                         if (this.transportLinePath().get(i).isBetweenTwoCoordinates(s.begin(), s.end()) || (this.transportLinePath().get(i).getX() == s.begin().getX() && this.transportLinePath().get(i).getY() == s.begin().getY()) || (this.transportLinePath().get(i).getX() == s.end().getX() && this.transportLinePath().get(i).getY() == s.end().getY())) {
